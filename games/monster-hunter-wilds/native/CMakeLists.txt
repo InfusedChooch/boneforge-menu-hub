@@ -20,7 +20,8 @@ target_compile_definitions(GHLQOL PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX
 target_link_libraries(GHLQOL PRIVATE ghl_lua bcrypt)
 target_compile_options(GHLQOL PRIVATE /W4 /EHsc /utf-8)
 target_compile_options(GHLQOL PRIVATE $<$<CONFIG:Release>:/Zi>)
-target_link_options(GHLQOL PRIVATE $<$<CONFIG:Release>:/DEBUG:FULL>)
+target_link_options(GHLQOL PRIVATE $<$<CONFIG:Release>:/DEBUG:FULL>
+    $<$<CONFIG:Release>:/PDBALTPATH:GHLQOL.pdb>)
 set_target_properties(GHLQOL PROPERTIES PREFIX "")
 
 # Retain the old bridge target for regression tests and rollback only.
@@ -31,19 +32,24 @@ target_compile_options(GHLQOLBootstrap PRIVATE /W4 /EHsc /utf-8 /Brepro)
 target_link_options(GHLQOLBootstrap PRIVATE /Brepro /INCREMENTAL:NO)
 set_target_properties(GHLQOLBootstrap PROPERTIES PREFIX "")
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-file(GLOB_RECURSE EMBEDDED_LUA_INPUTS CONFIGURE_DEPENDS ../source/reframework/autorun/*.lua)
+set(GHLQOL_CONTENT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE PATH
+    "Local project directory containing the external-host integration inputs")
+set(GHLQOL_CONTENT_SOURCE "${GHLQOL_CONTENT_ROOT}/source")
+set(GHLQOL_CONTENT_PAYLOAD "${GHLQOL_CONTENT_ROOT}/native/payloads")
+file(GLOB_RECURSE EMBEDDED_LUA_INPUTS CONFIGURE_DEPENDS
+    "${GHLQOL_CONTENT_SOURCE}/reframework/autorun/*.lua")
 set(EMBEDDED_GENERATED "${CMAKE_CURRENT_BINARY_DIR}/generated/$<CONFIG>")
 add_custom_command(
     OUTPUT "${EMBEDDED_GENERATED}/embedded_payload.hpp" "${EMBEDDED_GENERATED}/embedded_payload.json"
     COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_embedded_payload.py"
-        --output-dir "${EMBEDDED_GENERATED}"
+        --source-root "${GHLQOL_CONTENT_SOURCE}" --output-dir "${EMBEDDED_GENERATED}"
     DEPENDS ${EMBEDDED_LUA_INPUTS}
         ../tools/generate_embedded_payload.py
-        payloads/provenance.json
-        payloads/WpSeries_GreatSword.luac
-        payloads/GenSeries_ParryWindow.luac
-        ../source/reframework/plugins/WpSeries_GreatSword.dll
-        ../source/reframework/plugins/GenSeries_ParryWindow.dll
+        "${GHLQOL_CONTENT_PAYLOAD}/provenance.json"
+        "${GHLQOL_CONTENT_PAYLOAD}/WpSeries_GreatSword.luac"
+        "${GHLQOL_CONTENT_PAYLOAD}/GenSeries_ParryWindow.luac"
+        "${GHLQOL_CONTENT_SOURCE}/reframework/plugins/WpSeries_GreatSword.dll"
+        "${GHLQOL_CONTENT_SOURCE}/reframework/plugins/GenSeries_ParryWindow.dll"
     VERBATIM)
 add_library(GHLQOLRoot SHARED src/plugin.cpp src/menu.cpp src/cursor.cpp src/embedded_lua.cpp src/embedded_storage.cpp
     src/root_proxy.cpp src/direct_host.cpp src/host_profiles.cpp src/version_forwarders.asm src/root_proxy.def

@@ -2,4 +2,5 @@
 /native/payloads/
 /source/reframework/plugins/
 /build/
+/build-external/
 __pycache__/

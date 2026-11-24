@@ -1,0 +1,30 @@
+GHL QOL 0.0.23 native plug-in preview for Monster Hunter Wilds
+Windows x64
+
+Requirements
+
+Use this add-on with a working GHL QOL 0.0.23 Lua menu and a compatible
+REFramework plug-in host. The source supports host profiles 01410, 01436,
+01437 and 01438. The package provides the native UI plug-in.
+
+Install
+
+1. Close Monster Hunter Wilds.
+2. In Steam, right-click Monster Hunter Wilds and choose Manage > Browse local files.
+3. Find reframework/plugins in the game folder.
+4. If it already contains GHLQOL.dll, copy that file outside the game folder
+   to keep a backup.
+5. Extract the ZIP into the game folder so the new DLL is at
+   reframework/plugins/GHLQOL.dll.
+6. Launch the game and open the GHL QOL menu with your existing menu key.
+
+Uninstall
+
+Close the game, remove the preview GHLQOL.dll from reframework/plugins,
+and restore your backed-up plug-in if you made a copy.
+
+Source
+
+https://github.com/InfusedChooch/boneforge-valheaven/tree/wilds-native-v0.0.23/games/monster-hunter-wilds
+
+See LICENSE.txt and licenses/ for the applicable license texts.

@@ -1,0 +1,27 @@
+Open Skies 1.0.5 for No Man's Sky
+Windows x64, Vulkan, offline single-player
+
+Install
+
+1. Close No Man's Sky.
+2. In Steam, right-click No Man's Sky and choose Manage > Browse local files.
+3. Open Binaries, the folder that contains NMS.exe.
+4. Save a backup outside the game folder if Binaries already has a version.dll.
+5. Extract this ZIP's version.dll beside NMS.exe.
+6. Start No Man's Sky. Press F8 to open Open Skies, or use your saved menu key.
+
+The Expeditions tab can load your local season JSON files from
+OpenSkies.expeditions. The project's README describes the season-data setup.
+
+Uninstall
+
+Close the game and remove the Open Skies version.dll from Binaries. Restore
+your backup if you replaced another version.dll.
+
+Source
+
+The release corresponds to the open-skies-v1.0.5 tag. Clone the source and its
+pinned dependencies with:
+git clone --branch open-skies-v1.0.5 --recurse-submodules https://github.com/InfusedChooch/boneforge-valheaven.git
+
+See LICENSE.txt and licenses/ for the applicable license texts.

@@ -7,10 +7,10 @@
 *.cache
 
 # Native version.dll scaffolding (regenerated)
-Native/VersionProxy/build/
-Native/VersionProxy/menu.bin
-Native/VersionProxy/harmony.bin
-Native/VersionProxy/payload.bin
+/games/valheim/Native/VersionProxy/build/
+/games/valheim/Native/VersionProxy/menu.bin
+/games/valheim/Native/VersionProxy/harmony.bin
+/games/valheim/Native/VersionProxy/payload.bin
 
 # Install backups and release packages
 backups/

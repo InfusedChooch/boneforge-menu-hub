@@ -1,3 +1,18 @@
-[submodule "open-skies"]
-	path = games/no-mans-sky
-	url = https://github.com/InfusedChooch/open-skies.git
+[submodule "open-skies-Vulkan-Headers"]
+	path = games/no-mans-sky/external/Vulkan-Headers
+	url = https://github.com/KhronosGroup/Vulkan-Headers.git
+[submodule "open-skies-imgui"]
+	path = games/no-mans-sky/external/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "open-skies-json"]
+	path = games/no-mans-sky/external/json
+	url = https://github.com/nlohmann/json.git
+[submodule "open-skies-safetyhook"]
+	path = games/no-mans-sky/external/safetyhook
+	url = https://github.com/cursey/safetyhook.git
+[submodule "open-skies-zstd"]
+	path = games/no-mans-sky/external/zstd
+	url = https://github.com/facebook/zstd.git
+[submodule "open-skies-stb"]
+	path = games/no-mans-sky/external/stb
+	url = https://github.com/nothings/stb.git
