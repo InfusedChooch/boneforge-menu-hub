@@ -5,7 +5,7 @@
     <Nullable>disable</Nullable>
     <AssemblyName>ValheavenModMenu</AssemblyName>
     <Product>Valheaven | Boneforge Edition</Product>
-    <Version>3.0.6</Version>
+    <Version>4.0.0</Version>
     <GamePath Condition="'$(GamePath)' == ''">D:\SteamLibrary\steamapps\common\Valheim</GamePath>
     <GameManaged>$(GamePath)\valheim_Data\Managed</GameManaged>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>

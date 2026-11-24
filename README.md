@@ -2,7 +2,7 @@
 
 A Windows mod menu for Valheim with building, crafting, and world tools. It loads from `version.dll` alongside `valheim.exe` and runs without BepInEx.
 
-- **Version** 3.0.6
+- **Version** 4.0.0
 - **Verified on** Valheim 1.0.21 on Windows through the title screen and menu.
 - **Open menu** Press **F8** by default. Change the key in Settings.
 
@@ -14,6 +14,7 @@ This is an unofficial Valheim mod. Iron Gate Studio and Coffee Stain Publishing 
 
 ## Changelog
 
+- **4.0.0 (November 24, 2026)** Boneforge Edition version update.
 - **Boneforge Edition (November 24, 2026)** Updated the menu branding, credits, and documentation.
 - **3.0.6:** Hammer all prefabs can now place dungeons and world locations. Dungeons (crypts, caves, infested mines, Hildir's dungeons) build a new random layout with loot and enemies up in the sky, with a named entrance portal where you place it and an exit inside; camps and villages build in place. Locations (troll caves, burial chambers, frost caves, altars, ...) place whole, with their interiors and doors. Removing either with the hammer also removes what it spawned. Fixed: drag building, free rotation, snap, placement HUD, paste and bag/stack settings resetting on restart; placed spawners vanishing; Logging: Valheaven.log now records a session header, menu actions, toggles and hotkeys, and errors that used to be silent; Settings -> Diagnostics adds a Debug logging toggle, Write to log and Open log folder.
 - **3.0.5:** Fixed the real cause of the "falling/sliding mode" and "can't place anything (hammer/hoe/cultivator)" bugs. DX11: extra bootstrap path when the menu never started, menu-visibility details in Valheaven.log, and a hint when Exclusive Fullscreen is active.
