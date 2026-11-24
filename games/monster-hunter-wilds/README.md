@@ -1,6 +1,16 @@
-# GHL QOL for Monster Hunter Wilds
+# Boneforge Wilds for Monster Hunter Wilds
 
 This source snapshot comes from GHL QOL 0.0.23. The C++ menu and host adapters are in `native/src/`. The Lua menu pages and gameplay integrations are in `source/reframework/autorun/`.
+
+## Install the public menu
+
+With REFramework installed, extract the `reframework` folder from the [public menu ZIP](https://github.com/InfusedChooch/boneforge-menu-hub/releases/download/wilds-public-v0.1.0/boneforge-wilds-public-v0.1.0.zip) beside `MonsterHunterWilds.exe`. Open **Script Generated UI** in REFramework and choose Meals, Buffs, Extras, Positions, or Map. The archive includes the Lua entry point and every module those pages need. See the [installation and removal guide](public/INSTALL.txt) for upgrades from another GHL QOL edition.
+
+To reproduce the release ZIP, run this command from the Wilds project directory.
+
+```powershell
+python tools/package_public.py build/boneforge-wilds-public-v0.1.0.zip
+```
 
 ## Install the native plug-in
 

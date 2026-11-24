@@ -136,7 +136,7 @@ function M.draw(ui,menu)
     if changed then view.labels=value end
     local ok,layout=pcall(draw_canvas,menu,width,height,now)
     if not ok then
-        drag=nil;M.status.draw_error=tostring(layout):sub(1,1000);ui.muted("Map drawing failed; see GHLQOL-status.json.");return
+        drag=nil;M.status.draw_error=tostring(layout):sub(1,1000);ui.muted("Map drawing failed: "..M.status.draw_error);return
     end
     M.status.draw_error=nil
     if ui.input_text then

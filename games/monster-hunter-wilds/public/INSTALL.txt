@@ -1,0 +1,29 @@
+Boneforge Wilds 0.1.0 for Monster Hunter Wilds on Windows
+
+Requirements
+Use a working Monster Hunter Wilds installation with REFramework and Lua
+scripting enabled. This ZIP contains the complete public Boneforge menu.
+
+Install
+1. Close the game. In Steam, right-click Monster Hunter Wilds and choose
+   Manage > Browse local files. Find MonsterHunterWilds.exe.
+2. If you already use another GHL QOL edition, disable it using its original
+   uninstall instructions. Back up reframework/autorun/GHLQOL outside the
+   game folder if it exists. Run only one GHL QOL edition at a time.
+3. Copy the reframework folder from the ZIP into the folder containing
+   MonsterHunterWilds.exe. Merge folders when prompted. Check that
+   reframework/autorun/BoneforgeWilds.lua is directly under the game folder.
+4. Launch Wilds, open your REFramework overlay (Insert by default), expand
+   Script Generated UI and then BoneforgeWilds if shown. Choose a page.
+   Load a hunter to use actions that require an active character.
+
+Pages
+Meals, Buffs, Extras, Positions and Map. Settings are saved by REFramework
+in reframework/data/GHLQOL-gameplay.json. Position bookmarks and map pins
+last for the current scene and session.
+
+Uninstall
+Close the game. Remove reframework/autorun/BoneforgeWilds.lua and the
+eight files listed under reframework/autorun/GHLQOL in this ZIP. Restore
+your previous copies if you backed them up. You can keep the gameplay
+settings file for a later install.

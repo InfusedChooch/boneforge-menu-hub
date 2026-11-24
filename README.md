@@ -5,7 +5,7 @@ Source, builds, and installation guides for three PC game menus. InfusedChooch m
 | Game | Project | Windows download |
 | --- | --- | --- |
 | Valheim | [Valheaven Boneforge Edition](games/valheim/) | [Valheaven 4.0.0](https://github.com/InfusedChooch/boneforge-menu-hub/releases/tag/v4.0.0) |
-| Monster Hunter Wilds | [GHL QOL](games/monster-hunter-wilds/) | [Native plug-in preview](https://github.com/InfusedChooch/boneforge-menu-hub/releases/tag/wilds-native-v0.0.23) |
+| Monster Hunter Wilds | [Boneforge Wilds](games/monster-hunter-wilds/) | [Public Lua menu 0.1.0 for REFramework](https://github.com/InfusedChooch/boneforge-menu-hub/releases/tag/wilds-public-v0.1.0) |
 | No Man's Sky | [Open Skies](games/no-mans-sky/) | [Open Skies 1.0.5](https://github.com/InfusedChooch/boneforge-menu-hub/releases/tag/open-skies-v1.0.5) |
 
 ## Get the source
