@@ -130,24 +130,26 @@ namespace ValheimAdminMenu
             Plugin.Instance.Report("Saved \"" + name + "\" (" + record.pieceCount + " pieces).");
         }
 
-        internal static void LoadToClipboard(string name)
+        internal static (Release250.CopiedPiece[] Pieces, BlueprintTerrainDto Terrain) ReadPlacement(string name)
         {
             var record = Find(name);
             if (record == null) throw new ArgumentException("Choose a blueprint.");
             NormalizePieces(record);
-            if (record.pieces == null || record.pieces.Length == 0)
-                throw new InvalidOperationException("Blueprint \"" + record.name + "\" has no pieces. Re-copy and save it again.");
+            var pieces = (record.pieces ?? Array.Empty<BlueprintPieceDto>()).Select(FromDto).Where(p => p != null).ToArray();
+            if (pieces.Length == 0)
+                throw new InvalidOperationException("The selected blueprint has no pieces.");
+            return (pieces, CloneTerrain(record.terrain));
+        }
 
+        internal static void LoadToClipboard(string name, bool preview = true)
+        {
+            var placement = ReadPlacement(name);
             Release250.CancelPastePreview(silent: true);
             Release250.Clipboard.Clear();
-            foreach (var dto in record.pieces)
-            {
-                var piece = FromDto(dto);
-                if (piece != null) Release250.Clipboard.Add(piece);
-            }
-            Release250.ClipboardTerrain = CloneTerrain(record.terrain);
-            Plugin.Instance.Report("Loaded \"" + record.name + "\" (" + Release250.Clipboard.Count + " pieces).");
-            Release250.MaybeAutoPastePreview();
+            Release250.Clipboard.AddRange(placement.Pieces);
+            Release250.ClipboardTerrain = placement.Terrain;
+            Plugin.Instance.Report("Loaded " + name + " (" + placement.Pieces.Length + " pieces).");
+            if (preview) Release250.MaybeAutoPastePreview();
         }
 
         internal static void Rename(string fromName, string toName)

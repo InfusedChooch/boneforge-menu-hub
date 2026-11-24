@@ -32,10 +32,8 @@ namespace ValheimAdminMenu
             Note(page, "Breeding only works on creatures you own. On co-op, the host usually needs to run this.");
         }
 
-        private void BuildToolsPage(RectTransform page)
+        private void StructureCopyPasteSections(RectTransform page)
         {
-            if (!RequireCharacter(page)) return;
-            var p = app.Phase;
             Section(page, "Copy / paste structure");
             Note(page, "1) Set A/B corners (or Fit to location). 2) Optional Grow. 3) Copy. 4) Preview, then Confirm. Cyan box = volume. With World structures on, ruins and houses in the volume are included. Large copies can hitch.");
             ToggleRow(page, "Use feet for corners", () => Release250.CopyUseFeet, v => Release250.CopyUseFeet = v, "When on, corners use your feet instead of the look-hit. Useful for flat pads.");
@@ -78,7 +76,12 @@ namespace ValheimAdminMenu
             ToggleRow(page, L.T("build.paste_level"), () => Release250.PasteLevelGround, v => Release250.PasteLevelGround = v, L.T("build.paste_level.help"));
             ToggleRow(page, L.T("build.paste_per_piece"), () => Release250.PasteLevelPerPiece, v => Release250.PasteLevelPerPiece = v, L.T("build.paste_per_piece.help"));
             SliderRow(page, L.T("build.paste_feather"), () => Release250.PasteFeather, v => Release250.PasteFeather = v, 0f, 12f, L.T("build.paste_feather.help"));
+        }
 
+        private void BuildToolsPage(RectTransform page)
+        {
+            if (!RequireCharacter(page)) return;
+            StructureCopyPasteSections(page);
             Section(page, "Free rotation");
             ToggleRow(page, L.T("build.free_rotation"), () => FreeBuildRotation.Enabled, v => FreeBuildRotation.Enabled = v, L.T("build.free_rotation.help"));
             ToggleRow(page, L.T("build.universal_snap"), () => PlacementSnap.UniversalSnap, v => PlacementSnap.UniversalSnap = v, L.T("build.universal_snap.help"));
@@ -100,12 +103,21 @@ namespace ValheimAdminMenu
             ToggleRow(page, L.T("build.drag_enabled"), () => DragBuilding.Enabled, v => DragBuilding.Enabled = v, L.T("build.drag_enabled.help"));
             SliderRow(page, L.T("build.drag_max"), () => (float)DragBuilding.MaxPieces, v => DragBuilding.MaxPieces = Mathf.RoundToInt(v), 10f, 500f, L.T("build.drag_max.help"), whole: true);
 
+            BlueprintsSection(page);
+            HammerToolsSection(page);
+        }
+
+        private void BlueprintsSection(RectTransform page, bool showOverhead = false)
+        {
             Section(page, "Saved blueprints");
             Note(page, L.T("build.blueprints.note"));
             Field(page, "Blueprint name", blueprintName, v => blueprintName = v, "Name used when saving or renaming.", 48);
             ActionRow(page, "Current clipboard", "Save blueprint", () => BlueprintStore.SaveFromClipboard(blueprintName),
                 "Saves the current clipboard into your blueprint library.");
             SelectRow(page, "Blueprint", () => string.IsNullOrEmpty(selectedBlueprint) ? "Choose blueprint" : selectedBlueprint, BlueprintChoices);
+            if (showOverhead)
+                ActionRow(page, L.T("world_edit.blueprint_selected"), L.T("world_edit.blueprint_place"),
+                    () => app.Sculpt.StartBlueprint(selectedBlueprint), L.T("world_edit.blueprint_help"));
             ActionRow(page, "Selected", "Load to clipboard", () => BlueprintStore.LoadToClipboard(selectedBlueprint),
                 L.T("build.load_clipboard.help"));
             ActionRow(page, "Selected", "Paste at feet", () =>
@@ -136,7 +148,11 @@ namespace ValheimAdminMenu
             SelectRow(page, "Export folder file", () => string.IsNullOrEmpty(blueprintImport) ? "Pick file" : blueprintImport, BlueprintImportChoices);
             ActionRow(page, "Import into library", "Import", () => BlueprintStore.ImportFile(blueprintImport),
                 L.T("build.import.help"));
+        }
 
+        private void HammerToolsSection(RectTransform page)
+        {
+            var p = app.Phase;
             Section(page, "Piece scale");
             SliderRow(page, "Scale", () => Release250.PieceScale, v => Release250.PieceScale = v, .25f, 4f, "Target scale for the look-at piece (0.25-4x).");
             ActionRow(page, "Look-at piece", "Apply scale", () => Release250.ScaleLookPiece(Release250.PieceScale), "Scales the piece under the crosshair (you must own it).");

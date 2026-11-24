@@ -32,6 +32,7 @@ namespace ValheimAdminMenu
         private static readonly List<HotkeyFeature> features = new List<HotkeyFeature>();
         private static bool built;
         private static int boundCount;
+        internal static HotkeyFeature WorldEditor { get; private set; }
 
         internal static IReadOnlyList<HotkeyFeature> All
         {
@@ -81,6 +82,10 @@ namespace ValheimAdminMenu
             Toggle("autoPickupFilter", "hotkey.autoPickupFilter", () => app.Phase.AutoPickupFilter, v => app.Phase.AutoPickupFilter = v);
             Toggle("repairHammerAoe", "hotkey.repairHammerAoe", () => app.Phase.RepairHammerAoe, v => app.Phase.RepairHammerAoe = v);
             Toggle("esp", "hotkey.esp", () => app.Overlay.Enabled, v => app.Overlay.Enabled = v);
+
+            Action("worldEdit", "hotkey.worldEdit", app.Sculpt.ToggleEditor);
+            WorldEditor = features[features.Count - 1];
+            WorldEditor.Key = KeyCode.F6;
 
             Action("heal", "hotkey.heal", () => Safe(() => app.Features.Heal()));
             Action("depositChests", "hotkey.depositChests", () => Safe(() => ChestInventory.DepositNearby(app)));
@@ -165,10 +170,17 @@ namespace ValheimAdminMenu
                     var feature = Find(bind.id);
                     if (feature == null) { AppLog.Warning("Hotkey", "Saved bind for unknown feature '" + bind.id + "' ignored"); continue; }
                     var key = (KeyCode)bind.key;
+                    if (feature == WorldEditor && key == KeyCode.None) continue;
                     if (!Rules.ValidHotkey(key)) { AppLog.Warning("Hotkey", "Saved bind " + bind.id + "=" + key + " is not a valid key; ignored"); continue; }
                     feature.Key = key;
                     boundCount++;
                 }
+            }
+            if (binds?.Any(b => b?.id == WorldEditor.Id) != true && Plugin.Instance.Hotkey != KeyCode.F6
+                && !features.Any(f => f.Key == KeyCode.F6))
+            {
+                WorldEditor.Key = KeyCode.F6;
+                boundCount++;
             }
             ApplyBuiltInDefaults();
         }
@@ -186,7 +198,7 @@ namespace ValheimAdminMenu
         internal static HotkeyBindData[] CaptureBinds()
         {
             Ensure();
-            return features.Where(f => f.Key != KeyCode.None)
+            return features.Where(f => f.Key != KeyCode.None || f == WorldEditor)
                 .Select(f => new HotkeyBindData { id = f.Id, key = (int)f.Key })
                 .ToArray();
         }
@@ -200,7 +212,7 @@ namespace ValheimAdminMenu
             {
                 var feature = features[i];
                 if (feature.Key == KeyCode.None || !Rules.ValidHotkey(feature.Key)) continue;
-                if (feature.Key == app.Hotkey) continue;
+                if (feature == WorldEditor || feature.Key == app.Hotkey) continue;
                 if (!Input.GetKeyDown(feature.Key)) continue;
                 if (feature.Kind == HotkeyKind.Toggle && feature.Get != null && feature.Set != null)
                 {

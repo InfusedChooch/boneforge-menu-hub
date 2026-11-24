@@ -64,6 +64,25 @@ internal static class Program
         Check(CatalogRules.Matches("SwordIron","Iron sword"," SWORD "),"Catalog search ignores case and surrounding spaces");
         Check(CatalogRules.Matches("SwordIron","Iron sword","SwordIron"),"Catalog matches prefab ID");
         Check(!CatalogRules.Matches("SwordIron","Iron sword","wood"),"Catalog excludes unrelated search results");
+        Check(SculptViewport.PanMovement(new Vector2(80, -40), 40f, 800).Equals(new Vector3(-4f, 0f, 2f)),
+            "Overhead drag moves the camera opposite the pointer and stays on the ground plane");
+        Check(SculptViewport.PanMovement(new Vector2(80, -40), 80f, 800).Equals(new Vector3(-8f, 0f, 4f)),
+            "Overhead drag speed follows the visible world span");
+        var leftRail = SculptViewport.Side(false, 960, 560, 152, false);
+        var inspector = SculptViewport.Side(true, 960, 560, 248, false);
+        Check(leftRail.xMax < inspector.xMin && inspector.yMin == leftRail.yMin, "Both panels leave a working viewport");
+        var resizedLeft = SculptViewport.Side(false, 960, 560, 650, false);
+        var resizedRight = SculptViewport.Side(true, 960, 560, 1050, false);
+        Check(resizedRight.xMin - resizedLeft.xMax >= 380, "Wide-screen panel widths leave the viewport accessible after shrinking the window");
+        Check(SculptViewport.Side(true,960,560,248,true).width == 26, "Collapsed inspector uses only its tab width");
+        Check(SculptViewport.DockScale(640,480) < 1 && SculptViewport.DockScale(2560,1600) == 1.25f, "Workspace scales for small windows and caps on large screens");
+        Check(Release250.GridPoint(new Vector3(2.3f, 3f, -1.7f), .5f).Equals(new Vector3(2.5f, 3f, -1.5f)),
+            "Overhead grid rounds both horizontal axes and preserves elevation");
+        Check(Release250.GridPoint(new Vector3(2.3f, 3f, -1.7f), 0f).Equals(new Vector3(2.3f, 3f, -1.7f)),
+            "Disabling the grid preserves the placement origin");
+        Check(TerrainSculptMode.BrushOperation(0,true,false) == "lower" && TerrainSculptMode.BrushOperation(1,true,false) == "raise"
+            && TerrainSculptMode.BrushOperation(4,true,false) == "paint" && TerrainSculptMode.BrushOperation(0,true,true) == "smooth",
+            "Brush modifiers reverse height strokes and prioritize temporary smoothing");
         var skillEntry=new Skills.Skill(new Skills.SkillDef { m_skill=Skills.SkillType.Swords });
         skillEntry.m_level=87.75f; skillEntry.m_accumulator=9;
         PlayerFeatures.SetBaseSkill(skillEntry,25.5f);
@@ -139,7 +158,8 @@ internal static class Program
         Check(pluginAssembly.GetType("ValheimAdminMenu.HostTools")!=null,"Host authority helper present");
         Check(typeof(ExpansionFeatures).GetMethod("ApplyWeather",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!=null,"Weather apply API present");
         Check(typeof(ExpansionFeatures).GetMethod("ClearWeather",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!=null,"Weather clear API present");
-        Check(Plugin.ProductVersion=="4.0.0","Product version is 4.0.0");
+        Check(Plugin.ProductVersion=="4.0.1" && typeof(Plugin).Assembly.GetName().Version.ToString(3)==Plugin.ProductVersion,
+            "Menu and managed assembly report version 4.0.1");
         Check(pluginAssembly.GetType("ValheimAdminMenu.FeatureSuite")!=null,"FeatureSuite helper present");
         Check(pluginAssembly.GetType("ValheimAdminMenu.InventoryCapacity")!=null,"InventoryCapacity helper present");
         Check(typeof(SettingsData).GetField("playerInvRows")!=null && typeof(SettingsData).GetField("stackSizeMult")!=null,"Inventory capacity settings persist");
@@ -167,6 +187,14 @@ internal static class Program
         Check(pluginAssembly.GetType("ValheimAdminMenu.MenuWrapFit")!=null,"Menu wrap-fit helper present");
         Check(typeof(SettingsData).GetField("vfxReplaySpeed")!=null,"VFX replay speed persists");
         Check(pluginAssembly.GetType("ValheimAdminMenu.MenuSearchIndex")!=null,"Menu search index present");
+        var worldEditTabs = MenuView.SubTabKeys(MenuView.WorldEditTab);
+        Check(worldEditTabs.SequenceEqual(new[] { "sub.world.terrain", "sub.world_edit.structures", "tabs.camera" }),
+            "World Edit has Terrain, Structures, and Camera sections");
+        Check(MenuSearchIndex.All.Any(hit => hit.LabelKey == "sub.world.terrain"
+            && hit.Tab == MenuView.WorldEditTab && hit.Sub == MenuView.WorldEditTerrainSub)
+            && MenuSearchIndex.All.Any(hit => hit.LabelKey == "search.blueprint"
+            && hit.Tab == MenuView.WorldEditTab && hit.Sub == MenuView.WorldEditStructuresSub),
+            "Terrain and blueprint searches target the matching World Edit section");
         Check(typeof(PhaseFeatures).GetField("OneHitStructures",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!=null,"One-hit structures field present");
         Check(typeof(PhaseFeatures).GetField("KeepFoodOnDeath",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!=null,"Keep food on death field present");
         Check(typeof(PhaseFeatures).GetField("TpToPing",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!=null,"TP to ping field present");

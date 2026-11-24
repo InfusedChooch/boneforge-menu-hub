@@ -22,7 +22,7 @@ namespace ValheimAdminMenu
         {
             if (!Enabled) return;
             var app = Plugin.Instance;
-            if (app == null || app.Open) return;
+            if (app == null || app.Open || app.Sculpt?.Active == true) return;
             if (app.Phase != null && (app.Phase.HideHud || app.Phase.PhotoMode)) return;
 
             bool paste = Release250.PastePreviewActive;

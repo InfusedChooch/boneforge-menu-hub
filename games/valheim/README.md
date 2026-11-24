@@ -2,8 +2,8 @@
 
 A Windows mod menu for Valheim with building, crafting, and world tools. It loads from `version.dll` alongside `valheim.exe` and runs without BepInEx.
 
-- **Version** 4.0.0
-- **Verified on** Valheim 1.0.21 on Windows through the title screen and menu.
+- **Current release** 4.0.1
+- **Verified on** Valheim 1.0.21 on Windows in a local world and on a vanilla dedicated server.
 - **Open menu** Press **F8** by default. Change the key in Settings.
 
 ## License
@@ -14,6 +14,7 @@ This is an unofficial Valheim mod. Iron Gate Studio and Coffee Stain Publishing 
 
 ## Changelog
 
+- **4.0.1 (November 24, 2026)** Added the top-down World Edit workspace on **F6**, with a searchable parts picker, snapping and grid controls, terrain brushes, area copy, saved blueprints, group transforms, and shared undo/redo.
 - **4.0.0 (November 24, 2026)** Boneforge Edition version update.
 - **Boneforge Edition (November 24, 2026)** Updated the menu branding, credits, and documentation.
 - **3.0.6:** Hammer all prefabs can now place dungeons and world locations. Dungeons (crypts, caves, infested mines, Hildir's dungeons) build a new random layout with loot and enemies up in the sky, with a named entrance portal where you place it and an exit inside; camps and villages build in place. Locations (troll caves, burial chambers, frost caves, altars, ...) place whole, with their interiors and doors. Removing either with the hammer also removes what it spawned. Fixed: drag building, free rotation, snap, placement HUD, paste and bag/stack settings resetting on restart; placed spawners vanishing; Logging: Valheaven.log now records a session header, menu actions, toggles and hotkeys, and errors that used to be silent; Settings -> Diagnostics adds a Debug logging toggle, Write to log and Open log folder.
@@ -30,13 +31,42 @@ This is an unofficial Valheim mod. Iron Gate Studio and Coffee Stain Publishing 
 
 A full overlay menu: character cheats and QoL, building / crafting helpers, item spawner + editor, farming, world tools (weather, terrain, structure copy/paste + blueprints), teleport bookmarks, camera stuff, ESP, events, and hotkey binds.
 
+In a loaded world, open **F8 → World Edit** to shape or paint terrain, copy and preview structures, manage saved blueprints, or enable freecam building. Multiplayer terrain editing requires ownership of the loaded terrain tiles.
+
+### Top-down World Edit
+
+Press **F6** to enter or leave the editor. Rebind it under **Hotkeys → Toggle top-down World Edit**.
+
+| Control | Action |
+| --- | --- |
+| WASD or middle-drag | Pan the camera |
+| Wheel · Q / E | Zoom · turn the camera |
+| H · F1 | Hide the interface · show controls |
+| Panel arrow · inner edge | Collapse the panel · drag to resize |
+| Ctrl+Z / Ctrl+Y | Undo or redo one stroke or batch |
+| History | Click a row to return to that state within the last 24 edits. Esc closes the panel. |
+
+**Building.** Open **Build pieces** or press **P** for the parts panel. Pick a category or press **/** to search by name or prefab ID. **Enter** selects a single match. Hover over a tile to see its name and ID. Click the world repeatedly to build with the selected piece.
+
+- Choose **Free**, **0.5**, **1**, or **2 m** grid spacing. Enable **Snap to pieces** to use nearby native anchors. **Snapped** confirms alignment.
+- **R** rotates 15°. **PgUp/PgDn** adjust height by 1 m. Hold **Shift** for 0.1 m steps. **Pipette** samples a built piece and its rotation.
+- **Blueprints** previews a saved build. **B** previews the structure clipboard. Left-click places the preview. Right-click or **Esc** cancels it.
+
+**Selection and layers.** Click, Shift-click to add, or drag a box. **M** moves, **R** rotates, **PgUp/PgDn** change height, and **Ctrl+D** duplicates. Confirm with a world click or the inspector button. **Esc** cancels. **Ctrl+G** groups the selection for the session and **Ctrl+Shift+G** ungroups it. Moves preserve object identity and stored state. Duplicate and Delete support plain floors, walls, beams, roofs, and poles. Group edits check wards, ownership, loaded destinations, and current positions. **Layers** hides or locks build pieces, trees, and mineable rocks locally. Exiting restores visibility.
+
+**Terrain brushes.** Use **1–7** for Raise, Lower, Smooth, Flatten, Paint, Terrace, and Peak, respectively. **Ctrl+wheel** changes radius and **Shift+wheel** changes strength where available. Start a stroke with **Ctrl** to invert Raise/Lower or **Shift** to smooth. **Alt-click** samples a Flatten height. Terrace rounds heights toward the chosen step. Peak raises the center most. Paint has separate material and strength controls.
+
+**Area copy.** Choose **Area copy**, drag a rectangle, then use **Ctrl+C** to copy and **Ctrl+V** to preview. Left-click stamps the terrain, ground paint, and supported loaded objects. The preview stays armed for repeated placements. The structure clipboard stays available on **B**. **G** switches from a terrain brush to area selection.
+
+**Hills.** Press **L** from a terrain brush and drag outward to create a hill. Click a hill, then use **PgUp/PgDn** to change its height or **Delete** to remove it. Tall hills render in local worlds with Valheaven loaded. Hill handles and history last for the loaded world session. The terrain itself is saved. Press **T** to test the ground under your pointer in the Viking view, then use the editor hotkey to return.
+
 Settings, bookmarks, blueprints, and a log land next to the game folder. If that folder isn't writable, they go under `%AppData%\Valheaven\` instead.
 
 ---
 
 ## Install
 
-1. Download the [Windows ZIP](https://github.com/InfusedChooch/boneforge-menu-hub/releases/tag/v4.0.0) or build `version.dll` using the [build steps](#build).
+1. Download the [Windows ZIP](https://github.com/InfusedChooch/boneforge-menu-hub/releases/download/v4.0.1/boneforge-valheaven-v4.0.1-win-x64.zip) or build `version.dll` using the [build steps](#build).
 2. Extract or copy `version.dll` next to `valheim.exe`. If you built from source, you can also use the install script:
 
 ```powershell

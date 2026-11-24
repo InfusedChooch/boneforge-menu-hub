@@ -28,40 +28,50 @@ namespace ValheimAdminMenu
             try { piece.GetSnapPoints(ghostSnaps); } catch (Exception caught) { AppLog.Swallow(caught); return; }
             if (ghostSnaps.Count == 0) return;
 
-            CollectNearbyPieces(ghost.transform.position, SearchRadius);
-            if (nearby.Count == 0) return;
+            if (TrySnapDelta(piece, ghost.transform.position, ghost.transform.rotation, false, out var delta))
+                ghost.transform.position += delta;
+        }
 
+        internal static bool TrySnapPart(Piece prefab, Vector3 origin, Quaternion rotation, out Vector3 delta)
+        {
+            ghostSnaps.Clear();
+            prefab.GetSnapPoints(ghostSnaps);
+            return TrySnapDelta(prefab, origin, rotation, true, out delta);
+        }
+
+        private static bool TrySnapDelta(Piece source, Vector3 origin, Quaternion rotation, bool prefab, out Vector3 delta)
+        {
+            delta = Vector3.zero;
+            if (ghostSnaps.Count == 0) return false;
+            CollectNearbyPieces(origin, SearchRadius);
             float best = MaxPairDistance * MaxPairDistance;
-            Vector3 bestDelta = Vector3.zero;
             bool found = false;
-
-            for (int g = 0; g < ghostSnaps.Count; g++)
+            foreach (var other in nearby)
             {
-                var gs = ghostSnaps[g];
-                if (!gs) continue;
-                Vector3 gp = gs.position;
-                for (int i = 0; i < nearby.Count; i++)
+                if (other == source || other.transform.IsChildOf(source.transform)) continue;
+                if (prefab && (!other.TryGetComponent(out ZNetView view) || !view.IsValid())) continue;
+                worldSnaps.Clear();
+                try { other.GetSnapPoints(worldSnaps); } catch (Exception caught) { AppLog.Swallow(caught); continue; }
+                foreach (var local in ghostSnaps)
                 {
-                    var other = nearby[i];
-                    if (!other || other == piece) continue;
-                    if (other.transform.IsChildOf(ghost.transform)) continue;
-                    worldSnaps.Clear();
-                    try { other.GetSnapPoints(worldSnaps); } catch (Exception caught) { AppLog.Swallow(caught); continue; }
-                    for (int w = 0; w < worldSnaps.Count; w++)
+                    if (!local) continue;
+                    Vector3 point = prefab ? origin + rotation * (local.position - source.transform.position) : local.position;
+                    foreach (var anchor in worldSnaps)
                     {
-                        var ws = worldSnaps[w];
-                        if (!ws) continue;
-                        float sqr = (ws.position - gp).sqrMagnitude;
-                        if (sqr >= best) continue;
-                        best = sqr;
-                        bestDelta = ws.position - gp;
+                        if (!anchor) continue;
+                        Vector3 offset = anchor.position - point;
+                        float distance = offset.sqrMagnitude;
+                        if (distance >= best) continue;
+                        // Adjacent identical pieces can share several anchors. Do not snap a copy into its twin.
+                        if (prefab && other.m_name == source.m_name && (origin + offset - other.transform.position).sqrMagnitude < .001f
+                            && Quaternion.Angle(rotation, other.transform.rotation) < .1f) continue;
+                        best = distance;
+                        delta = offset;
                         found = true;
                     }
                 }
             }
-
-            if (found && bestDelta.sqrMagnitude > 0.000001f)
-                ghost.transform.position += bestDelta;
+            return found;
         }
 
         private static bool IsExcludedGhost(GameObject ghost)

@@ -472,9 +472,7 @@ namespace ValheimAdminMenu
             SliderRow(page,"Field of view scale",()=>p.FovScale,v=>p.FovScale=v,.5f,2,"Scales the camera field of view. Takes effect immediately.");
             SliderRow(page,"Max camera distance",()=>p.CameraDistance,v=>p.CameraDistance=v,.5f,5,"Scales third-person zoom range. Current zoom keeps its relative position.");
             SliderRow(page,"Max boat camera distance",()=>p.BoatCameraDistance,v=>p.BoatCameraDistance=v,.5f,5,"Scales camera distance while sailing.");
-            Section(page,"Freecam");
-            ToggleRow(page,"Freecam (free-fly)",()=>p.Freecam||(GameCamera.instance&&GameCamera.InFreeFly()),v=>Release250.SetFreecam(v),"Detaches the camera using vanilla GameCamera free-fly. Independent of character Flight.");
-            ToggleRow(page,L.T("camera.freecam_build"),()=>p.FreecamBuild,v=>p.FreecamBuild=v,L.T("camera.freecam_build.help"));
+            FreecamSection(page);
             Section(page,"Photo mode");
             ToggleRow(page,"Photo mode",()=>p.PhotoMode,v=>Release250.SetPhotoMode(v),"Hides HUD chrome; optional freeze. Distinct from freecam but can be combined.");
             ToggleRow(page,"Photo freeze world",()=>p.PhotoFreeze,v=>{p.PhotoFreeze=v;if(p.PhotoMode&&v)Time.timeScale=0.0001f;else if(!v&&Mathf.Abs(Time.timeScale-1f)>.001f)Time.timeScale=1f;},"Near-pauses time while Photo mode is on. Restores on exit.");
@@ -512,10 +510,46 @@ namespace ValheimAdminMenu
                 app.Features.Teleport(marker.Value);
             },"Teleports to the chosen map marker.");
         }
-        private void TerrainPage(RectTransform page)
+        private void WorldEditPage(RectTransform page,int sub)
+        {
+            switch(sub)
+            {
+                case WorldEditTerrainSub:
+                    TerrainPage(page, showSculpt: true);
+                    break;
+                case WorldEditStructuresSub:
+                    if(!RequireCharacter(page))return;
+                    Section(page, "Overhead placement");
+                    ActionRow(page, L.T("world_edit.parts_title"), L.T("world_edit.parts_browse"), () => OpenPartPicker(),
+                        L.T("world_edit.parts_browse_help"));
+                    StructureCopyPasteSections(page);
+                    BlueprintsSection(page, showOverhead: true);
+                    break;
+                default:
+                    if(!RequireCharacter(page))return;
+                    FreecamSection(page);
+                    break;
+            }
+        }
+
+        private void FreecamSection(RectTransform page)
+        {
+            var p=app.Phase;
+            Section(page,"Freecam");
+            ToggleRow(page,"Freecam (free-fly)",()=>p.Freecam||(GameCamera.instance&&GameCamera.InFreeFly()),v=>Release250.SetFreecam(v),"Detaches the camera using vanilla GameCamera free-fly. Independent of character Flight.");
+            ToggleRow(page,L.T("camera.freecam_build"),()=>p.FreecamBuild,v=>p.FreecamBuild=v,L.T("camera.freecam_build.help"));
+        }
+
+        private void TerrainPage(RectTransform page, bool showSculpt = false)
         {
             if(!RequireCharacter(page))return;
             var w=app.World;
+            if(showSculpt)
+            {
+                Section(page,L.T("world_edit.sculpt_section"));
+                ToggleRow(page,L.T("world_edit.sculpt_toggle"),()=>app.Sculpt.Active,
+                    enabled=>Run(enabled?(Action)app.Sculpt.Start:app.Sculpt.Stop),L.T("world_edit.sculpt_help"));
+            }
             Section(page,"Brush");
             SliderRow(page,"Radius (m)",()=>w.BrushRadius,v=>w.BrushRadius=v,1,50,"Size of the terrain brush. Large radii only affect loaded heightmaps you own.");
             SliderRow(page,"Feather edge (m)",()=>w.BrushFeather,v=>w.BrushFeather=v,0,12,"0 is a hard edge. Higher blends flatten, raise, lower, and fill back into the surrounding ground. Same slope as blueprint paste.");
@@ -547,10 +581,13 @@ namespace ValheimAdminMenu
             });
             DangerRow(page,"Paint terrain","Paint","Applies the selected ground paint in the brush. Persists in the world save.",()=>w.Terrain("paint"));
             Section(page,"History");
-            ActionRow(page,"Last brush stroke","Undo",()=>w.UndoTerrain(),"Restores height/paint arrays from before the last Valheaven terrain action. One step only.");
+            ActionRow(page,"Latest world edit","Undo",app.EditHistory.Undo,"Reverses the latest terrain edit, landform change, or placement.");
+            ActionRow(page,"Undone world edit","Redo",app.EditHistory.Redo,"Reapplies the most recently undone world edit.");
+            var recent = app.EditHistory.RecentLabels.ToArray();
+            if(recent.Length > 0) Note(page,"Recent edits: "+string.Join(" · ",recent));
             ActionRow(page,L.T("world.level_last_paste"),L.T("world.level_last_paste.action"),()=>w.LevelLastPaste(false),L.T("world.level_last_paste.help"));
             ActionRow(page,L.T("world.feather_last_paste"),L.T("world.feather_last_paste.action"),()=>w.LevelLastPaste(true),L.T("world.feather_last_paste.help"));
-            Note(page,"Terrain edits need ownership of loaded compilers (singleplayer / host). Undo is session-only and replaces the previous snapshot each stroke.");
+            Note(page,"Terrain edits need ownership of loaded tiles. World edit history keeps the latest 24 entries until you leave the world.");
         }
         internal static string LocationLabel(string name)
         {

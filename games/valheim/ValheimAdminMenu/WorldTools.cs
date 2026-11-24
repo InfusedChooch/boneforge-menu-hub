@@ -6,31 +6,14 @@ using Object = UnityEngine.Object;
 
 namespace ValheimAdminMenu
 {
-    internal sealed class WorldTools
+    internal sealed partial class WorldTools
     {
         private readonly Plugin app;
         internal float Radius = 30, BrushRadius = 5, BrushAmount = 1, PaintStrength = 1, BrushFeather = 6f;
         internal bool Square, Precision, BrushAtLook;
         /// <summary>0 Dirt, 1 Cultivate, 2 Paved, 3 Reset, 4 Clear vegetation.</summary>
         internal int PaintMode;
-        private TerrainUndoState undo;
-        internal bool CanUndo => undo != null;
         internal WorldTools(Plugin app) { this.app = app; }
-        private sealed class TerrainUndoState
-        {
-            internal readonly List<Tile> Tiles = new List<Tile>();
-            internal Vector3 Center;
-            internal float Radius;
-            internal string Label;
-            internal sealed class Tile
-            {
-                internal TerrainComp Comp;
-                internal Heightmap Map;
-                internal bool[] ModifiedHeight, ModifiedPaint;
-                internal float[] LevelDelta, SmoothDelta;
-                internal Color[] PaintMask;
-            }
-        }
         internal static T[] Loaded<T>() where T : Object => Object.FindObjectsByType<T>(FindObjectsSortMode.None);
         internal static bool Nearby(Component obj, Vector3 center, float radius) => obj && (obj.transform.position - center).sqrMagnitude <= radius * radius;
         private static bool Own(GameObject obj)
@@ -129,6 +112,35 @@ namespace ValheimAdminMenu
             app.RequireWorld();
             var player = app.RequirePlayer();
             Vector3 center = ResolveBrushCenter(player, operation);
+            string where = BrushAtLook && operation != "levelplayer" ? "at look hit" : "at feet";
+            EditTerrain(BrushLabel(operation), () => ApplyTerrain(operation, center, where));
+        }
+
+        internal void SculptTerrain(string operation, Vector3 center)
+        {
+            app.RequireWorld();
+            float reach = BrushRadius + (operation == "raise" || operation == "lower" || operation == "level" ? BrushFeather : 0f);
+            if (!PrivateArea.CheckAccess(center, Square ? reach * 1.415f : reach, false, true))
+                throw new InvalidOperationException("A ward protects terrain inside this brush.");
+            if (operation == "terrace" || operation == "peak")
+            {
+                float radius = Mathf.Clamp(BrushRadius, 1, 50);
+                float amount = Mathf.Clamp(BrushAmount, .05f, 8f);
+                EditTerrain(BrushLabel(operation), () => ApplyRegion(center, radius, (p, h) =>
+                {
+                    float x = Mathf.Abs(p.x - center.x), z = Mathf.Abs(p.z - center.z);
+                    float distance = Square ? Mathf.Max(x, z) : Mathf.Sqrt(x * x + z * z);
+                    if (distance > radius) return null;
+                    float weight = 1f - distance / radius;
+                    return operation == "peak" ? amount * weight : (Mathf.Round(h / amount) * amount - h) * Mathf.Clamp01(weight * 4f);
+                }));
+                return;
+            }
+            EditTerrain(BrushLabel(operation), () => ApplyTerrain(operation, center, "at cursor"));
+        }
+
+        private void ApplyTerrain(string operation, Vector3 center, string where)
+        {
             float radius = Mathf.Clamp(BrushRadius, 1, 50);
             float amount = Mathf.Clamp(BrushAmount, 0.05f, 8);
             float feather = Mathf.Clamp(BrushFeather, 0f, 12f);
@@ -155,7 +167,7 @@ namespace ValheimAdminMenu
                 owned.Add((map, compiler));
             }
             if (owned.Count == 0) throw new InvalidOperationException("Could not claim ownership of terrain compilers in range (host/loaded tiles only).");
-            CaptureUndo(owned, center, search, operation);
+            CaptureTerrain(owned);
             int count = 0;
             foreach (var (map, compiler) in owned)
             {
@@ -183,39 +195,10 @@ namespace ValheimAdminMenu
                 count++;
             }
             if (shape && feather > 0.01f && ClutterSystem.instance) ClutterSystem.instance.ResetGrass(center, search);
-            string where = BrushAtLook && operation != "levelplayer" ? "at look hit" : "at feet";
             string edge = shape && feather > 0.01f ? $", feather {feather:0.#} m" : "";
             app.Report($"Terrain {operation}: {count}/{maps.Count} tiles, brush {radius:0.#} m {where}{edge}. Persists in world save.");
         }
-        internal void UndoTerrain()
-        {
-            app.RequireWorld();
-            if (undo == null) throw new InvalidOperationException("Nothing to undo. Only the last Valheaven brush stroke is stored.");
-            int restored = 0;
-            foreach (var tile in undo.Tiles)
-            {
-                if (!tile.Comp || !tile.Map || !Own(tile.Comp.gameObject)) continue;
-                var changed = Reflection.Get<bool[]>(tile.Comp, "m_modifiedHeight");
-                var level = Reflection.Get<float[]>(tile.Comp, "m_levelDelta");
-                var smooth = Reflection.Get<float[]>(tile.Comp, "m_smoothDelta");
-                var paint = Reflection.Get<bool[]>(tile.Comp, "m_modifiedPaint");
-                var mask = Reflection.Get<Color[]>(tile.Comp, "m_paintMask");
-                Array.Copy(tile.ModifiedHeight, changed, Math.Min(changed.Length, tile.ModifiedHeight.Length));
-                Array.Copy(tile.LevelDelta, level, Math.Min(level.Length, tile.LevelDelta.Length));
-                Array.Copy(tile.SmoothDelta, smooth, Math.Min(smooth.Length, tile.SmoothDelta.Length));
-                Array.Copy(tile.ModifiedPaint, paint, Math.Min(paint.Length, tile.ModifiedPaint.Length));
-                Array.Copy(tile.PaintMask, mask, Math.Min(mask.Length, tile.PaintMask.Length));
-                Reflection.Set(tile.Comp, "m_lastOpPoint", undo.Center);
-                Reflection.Set(tile.Comp, "m_lastOpRadius", undo.Radius);
-                Reflection.Method(typeof(TerrainComp), "Save", typeof(bool)).Invoke(tile.Comp, new object[] { false });
-                tile.Map.Poke(1);
-                restored++;
-            }
-            if (ClutterSystem.instance) ClutterSystem.instance.ResetGrass(undo.Center, undo.Radius);
-            string label = undo.Label;
-            undo = null;
-            app.Report($"Undid last terrain op ({label}): restored {restored} tile(s).");
-        }
+        internal void UndoTerrain() => app.EditHistory.Undo();
         private Vector3 ResolveBrushCenter(Player player, string operation)
         {
             if (operation == "levelplayer")
@@ -299,29 +282,6 @@ namespace ValheimAdminMenu
             Reflection.Method(typeof(TerrainComp), "DoOperation", typeof(Vector3), typeof(Vector3), typeof(TerrainOp.Settings))
                 .Invoke(compiler, new object[] { center, Vector3.zero, settings });
         }
-        private void CaptureUndo(List<(Heightmap map, TerrainComp comp)> owned, Vector3 center, float radius, string label)
-        {
-            var state = new TerrainUndoState { Center = center, Radius = radius, Label = label };
-            foreach (var (map, comp) in owned)
-            {
-                var changed = Reflection.Get<bool[]>(comp, "m_modifiedHeight");
-                var level = Reflection.Get<float[]>(comp, "m_levelDelta");
-                var smooth = Reflection.Get<float[]>(comp, "m_smoothDelta");
-                var paint = Reflection.Get<bool[]>(comp, "m_modifiedPaint");
-                var mask = Reflection.Get<Color[]>(comp, "m_paintMask");
-                state.Tiles.Add(new TerrainUndoState.Tile
-                {
-                    Comp = comp,
-                    Map = map,
-                    ModifiedHeight = (bool[])changed.Clone(),
-                    LevelDelta = (float[])level.Clone(),
-                    SmoothDelta = (float[])smooth.Clone(),
-                    ModifiedPaint = (bool[])paint.Clone(),
-                    PaintMask = (Color[])mask.Clone()
-                });
-            }
-            undo = state;
-        }
         private void ResetCompiler(TerrainComp comp, Heightmap map, Vector3 center, float radius, bool heights, bool paint)
         {
             var changed = Reflection.Get<bool[]>(comp, "m_modifiedHeight");
@@ -393,7 +353,9 @@ namespace ValheimAdminMenu
                 : "Leveled last paste pad.");
         }
 
-        internal void ApplyPad(TerrainPad pad)
+        internal void ApplyPad(TerrainPad pad) => EditTerrain("level paste pad", () => ApplyPadCore(pad));
+
+        private void ApplyPadCore(TerrainPad pad)
         {
             app.RequireWorld();
             float feather = Mathf.Clamp(pad.Feather, 0f, 12f);
@@ -410,13 +372,15 @@ namespace ValheimAdminMenu
                 owned.Add((map, compiler));
             }
             if (owned.Count == 0) throw new InvalidOperationException("Could not claim ownership of terrain compilers in range (host/loaded tiles only).");
-            CaptureUndo(owned, center, reach, feather > 0.01f ? "paste-feather" : "paste-level");
+            CaptureTerrain(owned);
             foreach (var (map, compiler) in owned)
                 BlendPad(compiler, map, pad, feather, center, reach);
             if (ClutterSystem.instance) ClutterSystem.instance.ResetGrass(center, reach);
         }
 
-        internal void ApplySupports(List<TerrainPad> pads)
+        internal void ApplySupports(List<TerrainPad> pads) => EditTerrain("level piece supports", () => ApplySupportsCore(pads));
+
+        private void ApplySupportsCore(List<TerrainPad> pads)
         {
             app.RequireWorld();
             if (pads == null || pads.Count == 0) throw new InvalidOperationException("No piece footprints to level.");
@@ -464,7 +428,7 @@ namespace ValheimAdminMenu
                     bucket.Add(i);
                 }
             }
-            CaptureUndo(owned, center, reach, "paste-pieces");
+            CaptureTerrain(owned);
             foreach (var (map, compiler) in owned)
                 BlendSupports(compiler, map, pads, grid);
             if (ClutterSystem.instance) ClutterSystem.instance.ResetGrass(center, reach);
@@ -615,7 +579,10 @@ namespace ValheimAdminMenu
             return Mathf.Sqrt(dx * dx + dz * dz);
         }
 
-        internal void ApplyTerrainProfile(BlueprintTerrainDto terrain, Vector3 origin, Quaternion rotation)
+        internal void ApplyTerrainProfile(BlueprintTerrainDto terrain, Vector3 origin, Quaternion rotation) =>
+            EditTerrain("apply blueprint terrain", () => ApplyTerrainProfileCore(terrain, origin, rotation));
+
+        private void ApplyTerrainProfileCore(BlueprintTerrainDto terrain, Vector3 origin, Quaternion rotation)
         {
             app.RequireWorld();
             if (terrain == null || terrain.heights == null || terrain.width < 2)
@@ -641,7 +608,7 @@ namespace ValheimAdminMenu
             }
             if (owned.Count == 0)
                 throw new InvalidOperationException("Could not claim ownership of terrain compilers in range.");
-            CaptureUndo(owned, worldCenter, reach, "bbp-terrain");
+            CaptureTerrain(owned);
             var inv = Quaternion.Inverse(rotation);
             foreach (var (map, compiler) in owned)
                 BlendTerrainProfile(compiler, map, terrain, origin, inv, spacing, feather);

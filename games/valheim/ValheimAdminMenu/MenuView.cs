@@ -21,27 +21,31 @@ namespace ValheimAdminMenu
         private static readonly string[] TabKeys =
         {
             "tabs.character","tabs.build","tabs.items","tabs.entities","tabs.vfx","tabs.equipment",
-            "tabs.farming","tabs.world","tabs.teleport","tabs.camera","tabs.esp","tabs.events","tabs.hotkeys","tabs.settings"
+            "tabs.farming","tabs.world","tabs.teleport","tabs.camera","tabs.esp","tabs.events","tabs.hotkeys","tabs.settings",
+            "tabs.world_edit"
         };
-        private readonly int[] subTabs=new int[14];
+        private readonly int[] subTabs=new int[TabKeys.Length];
         private string TabLabel(int index) => L.T(TabKeys[index]);
-        private static string[] SubTabKeys(int main)
+        internal static string[] SubTabKeys(int main)
         {
             switch (main)
             {
                 case 0: return new[] { "sub.character.combat", "sub.character.survival", "sub.character.food", "sub.character.movement", "sub.character.powers" };
                 case 1: return new[] { "sub.build.placement", "sub.build.crafting", "sub.build.structure", "sub.build.stations", "sub.build.loot", "sub.build.tools" };
                 case 10: return new[] { "Settings", "Filters" };
-                case 7: return new[] { "sub.world.environment", "sub.world.creatures", "sub.world.terrain" };
+                case WorldTab: return new[] { "sub.world.environment", "sub.world.creatures", "sub.world.terrain" };
+                case WorldEditTab: return new[] { "sub.world.terrain", "sub.world_edit.structures", "tabs.camera" };
                 default: return null;
             }
         }
-        private readonly List<UnityEngine.UI.Image> navImages=new List<UnityEngine.UI.Image>();
+        private readonly UnityEngine.UI.Image[] navImages=new UnityEngine.UI.Image[TabKeys.Length];
         private readonly List<UnityEngine.UI.Image> subNavImages=new List<UnityEngine.UI.Image>();
         private readonly List<Action> refreshers=new List<Action>();
         private int tab, bindAfterFrame;
         private RectTransform subNav;
         private const int SettingsTab=12, HotkeysTab=11, ItemsTab=2, EntitiesTab=3, VfxTab=4, FarmingTab=6;
+        private const int WorldTab=7;
+        internal const int WorldEditTab=14, WorldEditTerrainSub=0, WorldEditStructuresSub=1;
         private string menuSearch="";
         private TMP_InputField menuSearchField;
         private bool SettingsDense => tab==SettingsTab;
@@ -100,7 +104,7 @@ namespace ValheimAdminMenu
         internal bool DismissOverlay()
         {
             if(dialog){CancelConfirmation();return true;}
-            if(popup){ClosePopup();return true;}
+            if(popup){DismissPopup();return true;}
             return false;
         }
         internal void Show()
@@ -225,6 +229,7 @@ namespace ValheimAdminMenu
             TickSliderLog();
             if(rebuild){BuildPage();rebuild=false;}
             FitWindow();
+            TickPartPicker();
             if(!sizeChecked && Time.frameCount-openedFrame>30)
             {
                 sizeChecked=true;
@@ -284,14 +289,17 @@ namespace ValheimAdminMenu
             var close=ActionButton(header,L.T("chrome.close_x"),()=>app.SetOpen(false),L.T("chrome.close_x.help"),false,"Close menu");At((RectTransform)close.transform,Width-62,18,34,34);
             var sidebar=Box(window,"Navigation",new Color(.069f,.067f,.061f),false);At(sidebar,1,75,181,Height-76);
             float navStep=Mathf.Min(42f,(Height-240f)/TabKeys.Length);
-            for(int i=0;i<TabKeys.Length;i++)
+            var sidebarOrder=Enumerable.Range(0,TabKeys.Length).ToList();
+            sidebarOrder.Remove(WorldEditTab);
+            sidebarOrder.Insert(WorldTab+1,WorldEditTab);
+            for(int i=0;i<sidebarOrder.Count;i++)
             {
-                int index=i;
-                var b=ActionButton(sidebar,TabLabel(i),()=>{tab=index;BuildPage();},null,false,"Tab "+TabKeys[i].Substring(5));
+                int index=sidebarOrder[i];
+                var b=ActionButton(sidebar,TabLabel(index),()=>{tab=index;BuildPage();},null,false,"Tab "+TabKeys[index].Substring(5));
                 At((RectTransform)b.transform,12,10+i*navStep,157,Mathf.Min(36,navStep-3));
                 var text=b.GetComponentInChildren<TextMeshProUGUI>();text.alignment=TextAlignmentOptions.MidlineLeft;text.margin=new Vector4(16,0,6,0);text.fontSize=15;
                 ChromeCaption(text);
-                navImages.Add(b.targetGraphic as UnityEngine.UI.Image);
+                navImages[index]=b.targetGraphic as UnityEngine.UI.Image;
             }
             keyText=Label(sidebar,"",13,Muted);At(keyText.rectTransform,24,Height-155,148,22);
             LabelAt(sidebar,L.T("chrome.close_menu"),24,Height-132,148,18,12,Muted);
@@ -370,7 +378,7 @@ namespace ValheimAdminMenu
             ClearHover();ClosePopup();refreshers.Clear();ResetFolds();Clear(body);subNavImages.Clear();
             if(subNav){Clear(subNav);subNav.gameObject.SetActive(false);}
             pageTitle.text=TabLabel(tab);
-            for(int i=0;i<navImages.Count;i++)
+            for(int i=0;i<navImages.Length;i++)
             {
                 var image=navImages[i];
                 if(image) image.color=i==tab?Selected:Color.clear;
@@ -390,13 +398,14 @@ namespace ValheimAdminMenu
                 case 1:BuildPageContent(content,sub);break;
                 case 5:EquipmentPage(content);break;
                 case 6:FarmingPage(content);break;
-                case 7:WorldPage(content,sub);break;
+                case WorldTab:WorldPage(content,sub);break;
                 case 8:TeleportPage(content);break;
                 case 9:CameraPage(content);break;
                 case 10:if(sub==0)OverlayPage(content);else EspFiltersPage(content);break;
                 case 11:EventsPage(content);break;
                   case 12:HotkeysPage(content);break;
                   case 13:SettingsPage(content);break;
+                case WorldEditTab:WorldEditPage(content,sub);break;
             }
             builtScrollKey=ScrollKey();
             restoreScroll=scrollMemory.TryGetValue(builtScrollKey, out restoreScrollValue);
@@ -464,7 +473,19 @@ namespace ValheimAdminMenu
                 if(image) image.color=i==active?Selected:Color.clear;
             }
         }
-        private void ClosePopup(){ClearHover();if(popup){popup.gameObject.SetActive(false);Object.Destroy(popup.gameObject);popup=null;}}
+        private void DismissPopup()
+        {
+            bool returnToEditor = partPicker?.OpenedFromEditor == true;
+            ClosePopup();
+            if (returnToEditor) app.SetOpen(false);
+        }
+        private void ClosePopup()
+        {
+            if (partPicker?.OpenedFromEditor == true && window) window.gameObject.SetActive(true);
+            partPicker = null;
+            ClearHover();
+            if (popup) { popup.gameObject.SetActive(false); Object.Destroy(popup.gameObject); popup = null; }
+        }
         internal void CancelConfirmation(){ClearHover();if(dialog){dialog.gameObject.SetActive(false);Object.Destroy(dialog.gameObject);dialog=null;}}
         private void Confirm(string title,string description,Action action)
         {
@@ -510,7 +531,7 @@ namespace ValheimAdminMenu
             Object.Destroy(root);
             root = null;
             // Root is gone; drop nav image refs before Show rebuilds.
-            navImages.Clear();
+            Array.Clear(navImages,0,navImages.Length);
             subNavImages.Clear();
             bodyFont = null;
             displayFont = null;

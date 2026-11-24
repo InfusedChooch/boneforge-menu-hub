@@ -16,15 +16,17 @@ namespace ValheimAdminMenu
     {
         public const string Id = "local.valheim.adminmenu";
         internal const string ProductName = "Valheaven | Boneforge Edition";
-        public const string ProductVersion = "4.0.0";
+        public const string ProductVersion = "4.0.1";
         /// <summary>Steam 1.0.7+ (checked through 1.0.20). Reflection.Check is the real gate.</summary>
         private const int MinSupportedPatch = 7;
         internal static Plugin Instance;
         // While the menu is open, keep capturing even across brief DX11 exclusive-fullscreen focus blips.
         internal static bool Capturing => Instance && (Instance.Open || (Time.frameCount <= Instance.blockThroughFrame && Application.isFocused));
-        internal static bool BlockingInput => Capturing && Instance.Settings != null && Instance.Settings.Data.blockGameInputs;
+        internal static bool BlockingInput => Instance
+            && (Instance.Sculpt?.BlocksInput == true || (Capturing && Instance.Settings != null && Instance.Settings.Data.blockGameInputs));
         internal readonly Queue<Action> Commands = new Queue<Action>();
         internal KeyCode Hotkey = KeyCode.F8;
+        internal bool MenuJustClosed => Time.frameCount <= blockThroughFrame;
         internal SavedSettings Settings;
         internal float UiScale = 1f;
         internal bool Open;
@@ -34,6 +36,8 @@ namespace ValheimAdminMenu
         internal PhaseFeatures Phase;
         internal ClientPlayers Network;
         internal WorldTools World;
+        internal WorldEditHistory EditHistory;
+        internal TerrainSculptMode Sculpt;
         internal Overlay Overlay;
         internal MenuView Menu;
         private Harmony harmony;
@@ -60,6 +64,8 @@ namespace ValheimAdminMenu
             Expansion = new ExpansionFeatures(this);
             Phase = new PhaseFeatures(this);
             World = new WorldTools(this);
+            EditHistory = new WorldEditHistory(this);
+            Sculpt = new TerrainSculptMode(this);
             Network = new ClientPlayers(this);
             Overlay = new Overlay(this);
             Menu = new MenuView(this);
@@ -109,13 +115,26 @@ namespace ValheimAdminMenu
             {
                 bool capturingKey = Menu.BindingKey;
                 Menu.PollKeybind();
-                if (!capturingKey && !Menu.EditingText && Input.GetKeyDown(Hotkey)) SetOpen(!Open);
-                if (!capturingKey && !Menu.EditingText) HotkeyRegistry.Poll(this);
-                if (!capturingKey && Open && Input.GetKeyDown(KeyCode.Escape) && !Menu.DismissOverlay()) SetOpen(false);
+                bool editingText = Menu.EditingText || Sculpt.EditingPartSearch;
+                var editorKey = HotkeyRegistry.WorldEditor?.Key ?? KeyCode.None;
+                bool editorShortcut = !capturingKey && !editingText && !Open && editorKey != KeyCode.None
+                    && editorKey != Hotkey && Input.GetKeyDown(editorKey) && Sculpt.CanToggleWithShortcut;
+                if (editorShortcut) Enqueue(Sculpt.ToggleEditor, "World Edit | " + editorKey);
+                else if (!capturingKey && !editingText && Input.GetKeyDown(Hotkey)) SetOpen(!Open);
+                if (!editorShortcut && !capturingKey && !Menu.EditingText && !Sculpt.Active) HotkeyRegistry.Poll(this);
+                if (!capturingKey && !editingText && Input.GetKeyDown(KeyCode.Escape))
+                {
+                    if (Open)
+                    {
+                        if (!Menu.DismissOverlay()) SetOpen(false);
+                    }
+                    else if (Sculpt.Active) Sculpt.CancelOrStop();
+                }
                 var player = Player.m_localPlayer;
                 if (player != lastPlayer)
                 {
                     AppLog.Info("Session", player ? "Local player spawned at " + player.transform.position.ToString("F0") + (ZNet.instance ? (ZNet.instance.IsServer() ? " (host/local world)" : " (client)") : "") + "; features reset" : "Local player gone; features reset");
+                    Sculpt.Stop();
                     SetOpen(false);
                     Settings.CaptureCharacterState = false;
                     Features.Restore();
@@ -172,6 +191,9 @@ namespace ValheimAdminMenu
             try { PlacementHud.Draw(); }
             catch (ExitGUIException) { throw; }
             catch (Exception ex) { AppLog.Warning("Placement HUD draw failed: " + ex.Message); }
+            try { Sculpt.Draw(); }
+            catch (ExitGUIException) { throw; }
+            catch (Exception ex) { Sculpt.Stop(); AppLog.Error("World Edit", "Sculpt overlay failed. " + ex); }
         }
         // DX11 exclusive fullscreen can blip focus when unlocking the cursor; closing here made F8 look dead.
         // Keep the menu open across focus changes and re-assert the cursor when focus returns.
@@ -194,6 +216,8 @@ namespace ValheimAdminMenu
         private void SceneChanged(Scene a, Scene b)
         {
             AppLog.Info("Session", "Scene " + a.name + " -> " + b.name + "; features cleared");
+            Sculpt.ClearScene();
+            EditHistory.Clear();
             SetOpen(false);
             if (Settings != null) { Settings.CaptureCharacterState = false; Settings.PendingPlayer = true; }
             Commands.Clear(); Features.Restore(); Expansion.Reset(); Phase.Reset(); Overlay.Clear(); Menu.ResetScene(); PlantEverything.Clear(); CreativeHammer.Clear(); ViewControls.Clear(); WaterControls.Clear(); MapControls.Clear();
@@ -356,7 +380,7 @@ namespace ValheimAdminMenu
             RequirePlayer();
             if (!ZNetScene.instance) throw new InvalidOperationException("Wait for the world to finish loading.");
         }
-        private void OnDisable() { PlantEverything.Clear(); CreativeHammer.Clear(); ViewControls.Clear(); WaterControls.Clear(); MapControls.Clear(); SetOpen(false); Features?.Restore(); Expansion?.Reset(); Phase?.Reset(); Commands.Clear(); }
+        private void OnDisable() { Sculpt?.Stop(); PlantEverything.Clear(); CreativeHammer.Clear(); ViewControls.Clear(); WaterControls.Clear(); MapControls.Clear(); SetOpen(false); Features?.Restore(); Expansion?.Reset(); Phase?.Reset(); Commands.Clear(); }
         private void OnDestroy()
         {
             SetOpen(false); Features?.Restore(); Expansion?.Reset(); Phase?.Reset(); Network?.Dispose(); Overlay?.Clear(); Menu?.Dispose();
@@ -505,7 +529,7 @@ namespace ValheimAdminMenu
     [HarmonyPatch(typeof(GameCamera), nameof(GameCamera.UpdateMouseCapture))]
     internal static class CursorPatch
     {
-        private static bool Prefix() { if (!Plugin.Capturing) return true; Plugin.ReleaseCursor(); return false; }
+        private static bool Prefix() { if (!Plugin.Capturing && Plugin.Instance?.Sculpt?.Active != true) return true; Plugin.ReleaseCursor(); return false; }
     }
     [HarmonyPatch]
     internal static class InputButtonsPatch
