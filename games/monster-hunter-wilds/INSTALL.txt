@@ -25,6 +25,6 @@ and restore your backed-up plug-in if you made a copy.
 
 Source
 
-https://github.com/InfusedChooch/boneforge-valheaven/tree/wilds-native-v0.0.23/games/monster-hunter-wilds
+https://github.com/InfusedChooch/boneforge-menu-hub/tree/wilds-native-v0.0.23/games/monster-hunter-wilds
 
 See LICENSE.txt and licenses/ for the applicable license texts.

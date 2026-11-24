@@ -28,7 +28,7 @@ See [CHANGELOG.md](CHANGELOG.md) for every version.
 
 ## Install
 
-Download the [Windows ZIP](https://github.com/InfusedChooch/boneforge-valheaven/releases/tag/open-skies-v1.0.5) and follow its [setup guide](INSTALL.txt).
+Download the [Windows ZIP](https://github.com/InfusedChooch/boneforge-menu-hub/releases/tag/open-skies-v1.0.5) and follow its [setup guide](INSTALL.txt).
 
 
 1. Build `version.dll` (below) or grab one from Releases.

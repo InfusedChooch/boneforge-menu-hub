@@ -36,13 +36,16 @@ set(GHLQOL_CONTENT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE PATH
     "Local project directory containing the external-host integration inputs")
 set(GHLQOL_CONTENT_SOURCE "${GHLQOL_CONTENT_ROOT}/source")
 set(GHLQOL_CONTENT_PAYLOAD "${GHLQOL_CONTENT_ROOT}/native/payloads")
+set(GHLQOL_TRACKED_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../source")
 file(GLOB_RECURSE EMBEDDED_LUA_INPUTS CONFIGURE_DEPENDS
-    "${GHLQOL_CONTENT_SOURCE}/reframework/autorun/*.lua")
+    "${GHLQOL_CONTENT_SOURCE}/reframework/autorun/*.lua"
+    "${GHLQOL_TRACKED_SOURCE}/reframework/autorun/*.lua")
 set(EMBEDDED_GENERATED "${CMAKE_CURRENT_BINARY_DIR}/generated/$<CONFIG>")
 add_custom_command(
     OUTPUT "${EMBEDDED_GENERATED}/embedded_payload.hpp" "${EMBEDDED_GENERATED}/embedded_payload.json"
     COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_embedded_payload.py"
-        --source-root "${GHLQOL_CONTENT_SOURCE}" --output-dir "${EMBEDDED_GENERATED}"
+        --source-root "${GHLQOL_CONTENT_SOURCE}" --lua-source-root "${GHLQOL_TRACKED_SOURCE}"
+        --output-dir "${EMBEDDED_GENERATED}"
     DEPENDS ${EMBEDDED_LUA_INPUTS}
         ../tools/generate_embedded_payload.py
         "${GHLQOL_CONTENT_PAYLOAD}/provenance.json"

@@ -3,4 +3,5 @@
 /source/reframework/plugins/
 /build/
 /build-external/
+/local-content/
 __pycache__/

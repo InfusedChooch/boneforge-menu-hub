@@ -24,12 +24,18 @@ class Payload:
         return {'name': self.name, 'source': self.source, 'bytes': len(self.data), 'sha256': self.sha256}
 
 
-def collect(source_root, bridge=None):
+def collect(source_root, bridge=None, *, lua_source_root=None):
     source_root = Path(source_root)
-    autorun = source_root / 'reframework/autorun'
+    lua_files = {}
+    roots = [source_root]
+    if lua_source_root is not None:
+        roots.append(Path(lua_source_root))
+    for root in roots:
+        autorun = root / 'reframework/autorun'
+        for path in autorun.rglob('*.lua'):
+            lua_files[path.relative_to(autorun)] = path
     modules = []
-    for path in sorted(autorun.rglob('*.lua')):
-        relative = path.relative_to(autorun)
+    for relative, path in sorted(lua_files.items()):
         name = relative.with_suffix('').as_posix().replace('/', '.')
         if name != 'GHLQOL' and not name.startswith(('GHLQOL.', 'ParryMeister.')):
             raise ValueError(f'Unexpected embedded module: {relative}')
@@ -116,8 +122,8 @@ def byte_array(symbol, data):
     return f'inline constexpr unsigned char {symbol}[] = {{\n' + ',\n'.join(rows or ['0']) + '\n};\n'
 
 
-def generate(source_root, output_dir, bridge=None):
-    modules, companions, bootstrap = collect(source_root, bridge)
+def generate(source_root, output_dir, bridge=None, *, lua_source_root=None):
+    modules, companions, bootstrap = collect(source_root, bridge, lua_source_root=lua_source_root)
     engines = collect_engines(source_root)
     manifest = {'format': 1, 'entrypoint': 'GHLQOL', 'startup': 'first-frame-once',
                 'startup_template_sha256': hashlib.sha256(bootstrap_source('', len(modules))).hexdigest(),
@@ -165,11 +171,12 @@ def generate(source_root, output_dir, bridge=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source-root', type=Path, default=PROJECT / 'source')
+    parser.add_argument('--lua-source-root', type=Path, help='Lua sources with priority over the local content root')
     parser.add_argument('--output-dir', type=Path, default=PROJECT / 'native/generated')
     parser.add_argument('--bridge', type=Path)
     args = parser.parse_args()
     try:
-        manifest = generate(args.source_root, args.output_dir, args.bridge)
+        manifest = generate(args.source_root, args.output_dir, args.bridge, lua_source_root=args.lua_source_root)
     except (OSError, UnicodeError, ValueError) as error:
         parser.exit(1, f'Cannot generate embedded payload: {error}\n')
     print(json.dumps({'modules': len(manifest['modules']), 'engines': len(manifest['engines']), 'companions': len(manifest['companions']),

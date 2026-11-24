@@ -22,6 +22,6 @@ Source
 
 The release corresponds to the open-skies-v1.0.5 tag. Clone the source and its
 pinned dependencies with:
-git clone --branch open-skies-v1.0.5 --recurse-submodules https://github.com/InfusedChooch/boneforge-valheaven.git
+git clone --branch open-skies-v1.0.5 --recurse-submodules https://github.com/InfusedChooch/boneforge-menu-hub.git
 
 See LICENSE.txt and licenses/ for the applicable license texts.

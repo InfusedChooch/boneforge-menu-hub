@@ -4,7 +4,7 @@ This source snapshot comes from GHL QOL 0.0.23. The C++ menu and host adapters a
 
 ## Install the native plug-in
 
-Download the [Windows plug-in preview](https://github.com/InfusedChooch/boneforge-valheaven/releases/tag/wilds-native-v0.0.23) and follow its [setup guide](INSTALL.txt). It adds the native UI to an existing compatible GHL QOL Lua setup.
+Download the [Windows plug-in preview](https://github.com/InfusedChooch/boneforge-menu-hub/releases/tag/wilds-native-v0.0.23) and follow its [setup guide](INSTALL.txt). It adds the native UI to an existing compatible GHL QOL Lua setup.
 
 ## Build the native menu plug-in
 
@@ -20,10 +20,10 @@ The `GHLQOL` target produces the native REFramework menu plug-in at `build/Relea
 
 ## Build the external-host package locally
 
-If you already have the complete local GHL QOL content, set `GHLQOL_CONTENT_ROOT` to the project directory containing `source/` and `native/payloads/`. The build verifies the engine inputs against that project's provenance manifest.
+The build uses the Lua from this checkout first. Set `GHLQOL_CONTENT_ROOT` to your ignored `local-content/` folder or an existing local GHL QOL project. It provides the additional RefShell and Buffer Lua, the layered-gear and Gogma preset files, and the two weapon engines. Use the existing `source/` and `native/payloads/` layout. The build verifies the engine files against the local provenance manifest.
 
 ```powershell
-$contentRoot = 'C:/path/to/your/GHLQOL'
+$contentRoot = (Resolve-Path 'local-content').Path
 cmake -S native -B build-external -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=OFF "-DGHLQOL_CONTENT_ROOT=$contentRoot"
 cmake --build build-external --config Release --target GHLQOLRoot
 ```

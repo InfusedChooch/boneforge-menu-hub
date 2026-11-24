@@ -36,7 +36,7 @@ Settings, bookmarks, blueprints, and a log land next to the game folder. If that
 
 ## Install
 
-1. Download the [Windows ZIP](https://github.com/InfusedChooch/boneforge-valheaven/releases/tag/v4.0.0) or build `version.dll` using the [build steps](#build).
+1. Download the [Windows ZIP](https://github.com/InfusedChooch/boneforge-menu-hub/releases/tag/v4.0.0) or build `version.dll` using the [build steps](#build).
 2. Extract or copy `version.dll` next to `valheim.exe`. If you built from source, you can also use the install script:
 
 ```powershell
