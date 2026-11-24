@@ -1,4 +1,20 @@
-# Valheaven | Boneforge Edition
+# Boneforge Menu Hub
+
+Source and releases for PC game menus. InfusedChooch maintains this hub.
+
+| Game | Project | Get started |
+| --- | --- | --- |
+| Valheim | Valheaven \| Boneforge Edition | [Download](https://github.com/InfusedChooch/boneforge-valheaven/releases/tag/v4.0.0) · [Source](ValheimAdminMenu/) · [Build](#build) |
+| Monster Hunter Wilds | GHL QOL | [Source and native plug-in build](games/monster-hunter-wilds/README.md) |
+| No Man's Sky | Open Skies | [Pinned project source](games/no-mans-sky) · [Project README](https://github.com/InfusedChooch/open-skies/blob/221c42570e62978ffb20a4285f8706bd135138fb/README.md) |
+
+From a Git checkout of this hub, retrieve Open Skies and its pinned dependencies with:
+
+```powershell
+git submodule update --init --recursive -- games/no-mans-sky
+```
+
+## Valheaven | Boneforge Edition
 
 A Windows mod menu for Valheim with building, crafting, and world tools. It loads from `version.dll` alongside `valheim.exe` and runs without BepInEx.
 
@@ -6,13 +22,13 @@ A Windows mod menu for Valheim with building, crafting, and world tools. It load
 - **Verified on** Valheim 1.0.21 on Windows through the title screen and menu.
 - **Open menu** Press **F8** by default. Change the key in Settings.
 
-## License
+### License
 
 Boneforge Edition is available under the [GNU General Public License v3.0](LICENSE).
 
 This is an unofficial Valheim mod. Iron Gate Studio and Coffee Stain Publishing are unaffiliated with the project. The mod is available free of charge and comes without warranty.
 
-## Changelog
+### Changelog
 
 - **4.0.0 (November 24, 2026)** Boneforge Edition version update.
 - **Boneforge Edition (November 24, 2026)** Updated the menu branding, credits, and documentation.
@@ -26,7 +42,7 @@ This is an unofficial Valheim mod. Iron Gate Studio and Coffee Stain Publishing 
 
 ---
 
-## What you get
+### What you get
 
 A full overlay menu: character cheats and QoL, building / crafting helpers, item spawner + editor, farming, world tools (weather, terrain, structure copy/paste + blueprints), teleport bookmarks, camera stuff, ESP, events, and hotkey binds.
 
@@ -34,10 +50,10 @@ Settings, bookmarks, blueprints, and a log land next to the game folder. If that
 
 ---
 
-## Install
+### Install
 
-1. Build `version.dll` using the [build steps](#build).
-2. Copy it next to `valheim.exe`, or:
+1. Download the [Windows ZIP](https://github.com/InfusedChooch/boneforge-valheaven/releases/tag/v4.0.0) or build `version.dll` using the [build steps](#build).
+2. Extract or copy `version.dll` next to `valheim.exe`. If you built from source, you can also use the install script:
 
 ```powershell
 .\Install-Valheaven.ps1 -GamePath "D:\SteamLibrary\steamapps\common\Valheim"
@@ -51,7 +67,7 @@ To uninstall, delete `version.dll`. Optional leftovers: `Valheaven.settings.json
 
 ---
 
-## Localization
+### Localization
 
 Strings are JSON packs in `ValheimAdminMenu/Locales/`. **`en.json` is the source of truth.**
 
@@ -71,7 +87,7 @@ Quick rules:
 
 ---
 
-## Build
+### Build
 
 You'll need Windows x64, a .NET SDK (net472 build + net8 for validation), a Valheim install for references, and CMake + VS 2022 C++ (MSVC x64) for the native DLL.
 
@@ -111,7 +127,7 @@ Produces `version.dll` at the repo root. More notes in [`Native/VersionProxy/REA
 
 ---
 
-## Contributing
+### Contributing
 
 Branch from `main` and keep pull requests focused. Keep build outputs (`bin/`, `obj/`, DLLs, PDBs, and archives) out of commits.
 
@@ -131,7 +147,7 @@ Validation/           offline checks
 
 ---
 
-## Maintainer
+### Maintainer
 
 [InfusedChooch](https://github.com/InfusedChooch) leads development and maintains Boneforge Edition.
 

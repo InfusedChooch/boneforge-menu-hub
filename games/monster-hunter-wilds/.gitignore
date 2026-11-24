@@ -1,0 +1,5 @@
+/native/vendor/
+/native/payloads/
+/source/reframework/plugins/
+/build/
+__pycache__/

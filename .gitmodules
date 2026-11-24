@@ -1,0 +1,3 @@
+[submodule "open-skies"]
+	path = games/no-mans-sky
+	url = https://github.com/InfusedChooch/open-skies.git

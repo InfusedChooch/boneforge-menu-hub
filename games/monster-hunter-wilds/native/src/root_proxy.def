@@ -1,0 +1,19 @@
+LIBRARY version
+EXPORTS
+GetFileVersionInfoA=ghl_version_0 @1
+GetFileVersionInfoByHandle=ghl_version_1 @2
+GetFileVersionInfoExA=ghl_version_2 @3
+GetFileVersionInfoExW=ghl_version_3 @4
+GetFileVersionInfoSizeA=ghl_version_4 @5
+GetFileVersionInfoSizeExA=ghl_version_5 @6
+GetFileVersionInfoSizeExW=ghl_version_6 @7
+GetFileVersionInfoSizeW=ghl_version_7 @8
+GetFileVersionInfoW=ghl_version_8 @9
+VerFindFileA=ghl_version_9 @10
+VerFindFileW=ghl_version_10 @11
+VerInstallFileA=ghl_version_11 @12
+VerInstallFileW=ghl_version_12 @13
+VerLanguageNameA=ghl_version_13 @14
+VerLanguageNameW=ghl_version_14 @15
+VerQueryValueA=ghl_version_15 @16
+VerQueryValueW=ghl_version_16 @17
