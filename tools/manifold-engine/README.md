@@ -2,9 +2,7 @@
 
 [Download the portable Windows x64 ZIP](Manifold-Engine-e9b5e8de-win-x64.zip) to open and test Cheat Engine tables (`.CT`). Extract the entire ZIP into a writable folder, start `Manifold-Engine.exe`, and press **Ctrl+O** to open a table. Use **Ctrl+Shift+S** to save a copy. You can open and save a table without attaching to a process.
 
-## Local tables
-
-Keep personal `.CT` files in `tools/manifold-engine/tables/`. The public GitHub checkout ignores this directory. The private Gitea hub tracks the collection at the same path. Game release ZIPs are packaged separately.
+Open tables from the hub's shared `tables/` folder with **Ctrl+O**.
 
 ## Build identity
 

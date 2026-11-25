@@ -12,6 +12,8 @@ Boneforge's workspace for PC game mods and modding tools. Game projects live und
 
 ## Tools
 
+The top-level `tables/` folder holds the shared `.CT` collection for Cheat Engine, GHL CE/DMA, and Manifold Engine. Gitea tracks the tables in the hub. On GitHub, the collection has its own private repository, which can be cloned into `tables/`. The public hub ignores that folder.
+
 - [Manifold Engine](tools/manifold-engine/) includes a portable Windows x64 build for opening and testing Cheat Engine tables.
 - [GHL CE/DMA](tools/ghl-ce-dma/) contains the pinned source package for the GHL edition of Cheat Engine and its DMA plugin. Make tool changes in this checkout and push them to the tool's own repository.
 

@@ -17,6 +17,7 @@ backups/
 *.zip
 !/tools/manifold-engine/Manifold-Engine-*-win-x64.zip
 /tools/manifold-engine/tables/
+/tables/
 
 # Local runtime / validation artifacts that are regenerated
 Valheaven-Validation.txt
