@@ -22,3 +22,9 @@
 [submodule "vermintide-2-source-code"]
 	path = games/vermintide-2/external/Vermintide-2-Source-Code
 	url = https://github.com/InfusedChooch/Vermintide-2-Source-Code.git
+[submodule "manifold-engine"]
+	path = tools/manifold-engine/source
+	url = https://github.com/InfusedChooch/Manifold-Engine.git
+[submodule "ghl-ce-dma"]
+	path = tools/ghl-ce-dma
+	url = https://github.com/InfusedChooch/ghl-ce-dma.git

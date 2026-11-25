@@ -1,6 +1,6 @@
 # Boneforge Menu Hub
 
-Source, builds, and installation guides for PC game menus and mods. InfusedChooch maintains the hub.
+Boneforge's workspace for PC game mods and modding tools. Game projects live under `games/` and shared tools under `tools/`. InfusedChooch maintains the hub.
 
 | Game | Project | Download or install |
 | --- | --- | --- |
@@ -10,10 +10,15 @@ Source, builds, and installation guides for PC game menus and mods. InfusedChooc
 | Warhammer 40,000: Darktide | [Lua ESP and Gambits](games/darktide/) | [Install from source](games/darktide/#installation) |
 | Warhammer: Vermintide 2 | [Game script reference](games/vermintide-2/) | [Initialize the submodule](games/vermintide-2/#get-the-reference) |
 
+## Tools
+
+- [Manifold Engine](tools/manifold-engine/) includes a portable Windows x64 build for opening and testing Cheat Engine tables.
+- [GHL CE/DMA](tools/ghl-ce-dma/) contains the pinned source package for the GHL edition of Cheat Engine and its DMA plugin. Make tool changes in this checkout and push them to the tool's own repository.
+
 ## Get the source
 
 ```powershell
 git clone --recurse-submodules https://github.com/InfusedChooch/boneforge-menu-hub.git
 ```
 
-For an existing checkout, initialize the pinned libraries and game script references with `git submodule update --init --recursive`. See each game folder for its setup instructions.
+For an existing checkout, initialize the pinned tools, libraries, and game script references with `git submodule update --init --recursive`. Each project folder has its own setup instructions.
