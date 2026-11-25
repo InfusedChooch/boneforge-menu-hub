@@ -167,7 +167,7 @@ namespace ValheimAdminMenu
                 owned.Add((map, compiler));
             }
             if (owned.Count == 0) throw new InvalidOperationException("Could not claim ownership of terrain compilers in range (host/loaded tiles only).");
-            CaptureTerrain(owned);
+            using var stamp = CaptureTerrain(owned);
             int count = 0;
             foreach (var (map, compiler) in owned)
             {
@@ -372,7 +372,7 @@ namespace ValheimAdminMenu
                 owned.Add((map, compiler));
             }
             if (owned.Count == 0) throw new InvalidOperationException("Could not claim ownership of terrain compilers in range (host/loaded tiles only).");
-            CaptureTerrain(owned);
+            using var stamp = CaptureTerrain(owned);
             foreach (var (map, compiler) in owned)
                 BlendPad(compiler, map, pad, feather, center, reach);
             if (ClutterSystem.instance) ClutterSystem.instance.ResetGrass(center, reach);
@@ -428,7 +428,7 @@ namespace ValheimAdminMenu
                     bucket.Add(i);
                 }
             }
-            CaptureTerrain(owned);
+            using var stamp = CaptureTerrain(owned);
             foreach (var (map, compiler) in owned)
                 BlendSupports(compiler, map, pads, grid);
             if (ClutterSystem.instance) ClutterSystem.instance.ResetGrass(center, reach);
@@ -608,7 +608,7 @@ namespace ValheimAdminMenu
             }
             if (owned.Count == 0)
                 throw new InvalidOperationException("Could not claim ownership of terrain compilers in range.");
-            CaptureTerrain(owned);
+            using var stamp = CaptureTerrain(owned);
             var inv = Quaternion.Inverse(rotation);
             foreach (var (map, compiler) in owned)
                 BlendTerrainProfile(compiler, map, terrain, origin, inv, spacing, feather);

@@ -1,8 +1,7 @@
 using System;
-using System.Reflection;
+using System.Threading;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using ValheimAdminMenu;
 
 namespace Valheaven
@@ -11,7 +10,8 @@ namespace Valheaven
     public static class Entrypoint
     {
         private static bool started;
-        private static bool scheduled;
+        private static int scheduled;
+        private static volatile bool gatesInstalled;
         private static Harmony bootstrap;
         private static int failures;
         private static float retryAt;
@@ -19,24 +19,16 @@ namespace Valheaven
         /// <summary>Idempotent. Safe from a non-main Mono thread.</summary>
         public static void Start()
         {
-            if (started || scheduled) return;
-            scheduled = true;
+            if (Interlocked.Exchange(ref scheduled, 1) != 0) return;
 
             bootstrap = new Harmony("valheaven.bootstrap");
-            MethodInfo gate =
-                AccessTools.Method(typeof(SceneManager), "Internal_ActiveSceneChanged")
-                ?? AccessTools.Method(typeof(SceneManager), "Internal_SceneLoaded");
-
             var ready = new HarmonyMethod(typeof(Entrypoint), nameof(OnMainThreadReady));
             int gates = 0;
-            if (gate != null) { bootstrap.Patch(gate, postfix: ready); gates++; }
-
-            // Scene change alone can miss: if the worker attaches after the last transition, nothing boots until the
-            // next one and the hotkey looks dead. Per-frame menu/world updates are a fallback main-thread gate.
+            // Frame callbacks run after Start, including when the loader attaches mid-session.
             foreach (var frame in new[]
                      {
                          AccessTools.Method(typeof(FejdStartup), "Update"),
-                         AccessTools.Method(typeof(MonoUpdaters), "Update")
+                         AccessTools.Method(typeof(Game), "Update")
                      })
             {
                 if (frame == null) continue;
@@ -46,12 +38,16 @@ namespace Valheaven
 
             if (gates == 0)
                 throw new MissingMethodException("No Unity main-thread bootstrap gate found.");
+            gatesInstalled = true;
         }
 
         // Harmony postfix. Unity objects only on the main thread.
         private static void OnMainThreadReady()
         {
-            if (started) return;
+            // The loader may still be patching the other callback when this one first fires.
+            if (!gatesInstalled || started) return;
+            var database = ObjectDB.instance;
+            if (!database || database.m_items == null || database.m_items.Count == 0) return;
             // Per-frame gates fire every frame; after a failure, retry about once a second rather than every frame.
             if (failures > 0 && Time.realtimeSinceStartup < retryAt) return;
             try

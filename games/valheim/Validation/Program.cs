@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -83,6 +84,16 @@ internal static class Program
         Check(TerrainSculptMode.BrushOperation(0,true,false) == "lower" && TerrainSculptMode.BrushOperation(1,true,false) == "raise"
             && TerrainSculptMode.BrushOperation(4,true,false) == "paint" && TerrainSculptMode.BrushOperation(0,true,true) == "smooth",
             "Brush modifiers reverse height strokes and prioritize temporary smoothing");
+        var points = new Dictionary<int, (float Before, float After)>();
+        WorldTools.MergeTerrainPoint(points, 4, 0f, 2f);
+        WorldTools.MergeTerrainPoint(points, 4, 2f, 3f);
+        Check(points[4] == (0f, 3f), "Overlapping stamps undo to the start of the stroke");
+        WorldTools.MergeTerrainPoint(points, 9, 8f, 8f);
+        Check(!points.ContainsKey(9), "A stroke excludes unchanged vertices");
+        WorldTools.MergeTerrainPoint(points, 4, 5f, 6f);
+        Check(points[4] == (5f, 6f), "An intervening edit sets the undo height at an overlapping vertex");
+        WorldTools.MergeTerrainPoint(points, 4, 6f, 5f);
+        Check(points.Count == 0, "A stroke returning to its baseline leaves no history delta");
         var skillEntry=new Skills.Skill(new Skills.SkillDef { m_skill=Skills.SkillType.Swords });
         skillEntry.m_level=87.75f; skillEntry.m_accumulator=9;
         PlayerFeatures.SetBaseSkill(skillEntry,25.5f);
@@ -158,8 +169,8 @@ internal static class Program
         Check(pluginAssembly.GetType("ValheimAdminMenu.HostTools")!=null,"Host authority helper present");
         Check(typeof(ExpansionFeatures).GetMethod("ApplyWeather",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!=null,"Weather apply API present");
         Check(typeof(ExpansionFeatures).GetMethod("ClearWeather",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!=null,"Weather clear API present");
-        Check(Plugin.ProductVersion=="4.0.1" && typeof(Plugin).Assembly.GetName().Version.ToString(3)==Plugin.ProductVersion,
-            "Menu and managed assembly report version 4.0.1");
+        Check(Plugin.ProductVersion=="4.0.2" && typeof(Plugin).Assembly.GetName().Version.ToString(3)==Plugin.ProductVersion,
+            "Menu and managed assembly report version 4.0.2");
         Check(pluginAssembly.GetType("ValheimAdminMenu.FeatureSuite")!=null,"FeatureSuite helper present");
         Check(pluginAssembly.GetType("ValheimAdminMenu.InventoryCapacity")!=null,"InventoryCapacity helper present");
         Check(typeof(SettingsData).GetField("playerInvRows")!=null && typeof(SettingsData).GetField("stackSizeMult")!=null,"Inventory capacity settings persist");

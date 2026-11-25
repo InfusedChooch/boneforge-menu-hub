@@ -16,7 +16,7 @@ namespace ValheimAdminMenu
     {
         public const string Id = "local.valheim.adminmenu";
         internal const string ProductName = "Valheaven | Boneforge Edition";
-        public const string ProductVersion = "4.0.1";
+        public const string ProductVersion = "4.0.2";
         /// <summary>Steam 1.0.7+ (checked through 1.0.20). Reflection.Check is the real gate.</summary>
         private const int MinSupportedPatch = 7;
         internal static Plugin Instance;

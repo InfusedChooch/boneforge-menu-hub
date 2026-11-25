@@ -2,7 +2,7 @@
 
 A Windows mod menu for Valheim with building, crafting, and world tools. It loads from `version.dll` alongside `valheim.exe` and runs without BepInEx.
 
-- **Current release** 4.0.1
+- **Current release** 4.0.2
 - **Verified on** Valheim 1.0.30 for Windows (Steam build 26870846, network version 42), including a vanilla dedicated server.
 - **Open menu** Press **F8** by default. Change the key in Settings.
 
@@ -13,6 +13,8 @@ Boneforge Edition is available under the [GNU General Public License v3.0](../..
 This is an unofficial Valheim mod. Iron Gate Studio and Coffee Stain Publishing are unaffiliated with the project. The mod is available free of charge and comes without warranty.
 
 ## Changelog
+
+- **4.0.2 (November 25, 2026)** World Edit now preserves independent terrain changes between brush stamps, replays terrain history after a tile reloads, and restores only the pieces removed by placement undo. Menu startup waits for the game’s item database before installing feature hooks.
 
 - **November 25, 2026 compatibility check.** The released 4.0.1 DLL passed 400 offline checks and 85 in-game assertions on Valheim 1.0.30. All 168 Harmony hooks loaded. Tests covered World Edit, dedicated-server placement and reconnect, and both Forge of Potential options.
 - **4.0.1 (November 24, 2026)** Added the top-down World Edit workspace on **F6**, with a searchable parts picker, snapping and grid controls, terrain brushes, area copy, saved blueprints, group transforms, and shared undo/redo.
@@ -67,7 +69,7 @@ Settings, bookmarks, blueprints, and a log land next to the game folder. If that
 
 ## Install
 
-1. Download the [Windows ZIP](https://github.com/InfusedChooch/boneforge-menu-hub/releases/download/v4.0.1/boneforge-valheaven-v4.0.1-win-x64.zip) or build `version.dll` using the [build steps](#build).
+1. Download the [Windows ZIP](https://github.com/InfusedChooch/boneforge-menu-hub/releases/download/v4.0.2/boneforge-valheaven-v4.0.2-win-x64.zip) or build `version.dll` using the [build steps](#build).
 2. Extract or copy `version.dll` next to `valheim.exe`. If you built from source, you can also use the install script:
 
 ```powershell

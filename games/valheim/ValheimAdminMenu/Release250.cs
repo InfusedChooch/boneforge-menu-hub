@@ -1342,6 +1342,7 @@ namespace ValheimAdminMenu
         private static WorldEditHistory.Change PieceHistory(List<PlacedPiece> pieces)
         {
             if (pieces.Count == 0) return null;
+            var removed = new List<PlacedPiece>();
             return new WorldEditHistory.Change(
                 () =>
                 {
@@ -1381,25 +1382,27 @@ namespace ValheimAdminMenu
                 },
                 () =>
                 {
+                    removed.Clear();
                     foreach (var piece in pieces)
                     {
                         if (!piece.Instance) continue;
                         if (piece.Instance.GetComponent<ZNetView>()) ZNetScene.instance.Destroy(piece.Instance);
                         else Object.Destroy(piece.Instance);
+                        removed.Add(piece);
                         piece.Instance = null;
                     }
                 },
                 () =>
                 {
-                    if (pieces.Any(piece => !PrivateArea.CheckAccess(piece.Position,0f,false,true)))
+                    if (removed.Any(piece => !PrivateArea.CheckAccess(piece.Position,0f,false,true)))
                         throw new InvalidOperationException("A ward protects the placement.");
-                    if (pieces.Any(piece => !ZNetScene.instance.GetPrefab(piece.Prefab)))
+                    if (removed.Any(piece => !ZNetScene.instance.GetPrefab(piece.Prefab)))
                         throw new InvalidOperationException("A prefab from this history entry is unavailable.");
                 },
                 () =>
                 {
                     var creator = PlacementCreator();
-                    foreach (var piece in pieces)
+                    foreach (var piece in removed)
                         PlacePiece(ZNetScene.instance.GetPrefab(piece.Prefab), piece, creator);
                 });
         }

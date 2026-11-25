@@ -100,7 +100,7 @@ namespace ValheimAdminMenu
             var tiles = maps.Select(map => (map, comp: map.GetAndCreateTerrainCompiler())).ToList();
             if (tiles.Any(tile => !tile.comp || !Own(tile.comp.gameObject)))
                 throw new InvalidOperationException("The editor needs ownership of every affected terrain tile.");
-            CaptureTerrain(tiles);
+            using var stamp = CaptureTerrain(tiles);
             foreach (var (map, comp) in tiles)
             {
                 var arrays = new TileArrays(comp, false);

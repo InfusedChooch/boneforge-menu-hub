@@ -246,7 +246,7 @@ namespace ValheimAdminMenu
                 tmp.text = Localization.instance != null ? Localization.instance.Localize(text) : text;
                 tmp.fontSize = 6f;
                 tmp.alignment = TMPro.TextAlignmentOptions.Center;
-                tmp.enableWordWrapping = false;
+                tmp.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
                 tmp.color = new Color(1f, .86f, .45f);
                 tmp.rectTransform.sizeDelta = new Vector2(10f, 2f);
                 go.AddComponent<DungeonLabel>();
