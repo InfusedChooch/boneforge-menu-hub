@@ -68,11 +68,28 @@ local function context()
     local pos=read("Transform.get_Position",function()return xyz(trans:call("get_Position"))end)
     return key,trans,pos,go
 end
+local stages
+M.region_name=require("GHLQOL.records").region_name
+function M.region()
+    local manager=sdk.get_managed_singleton("app.MasterFieldManager")
+    if not manager then return nil end
+    local id=manager:call("get_CurrentStage")
+    if type(id)~="number" or id<0 then return nil end
+    if not stages then
+        local names={}
+        for _,entry in ipairs(R.enum("app.FieldDef.STAGE")) do
+            if entry[2]:match("^ST%d") then names[entry[1]]=entry[2] end
+        end
+        stages=names
+    end
+    return stages[id]
+end
 local function checked(point)
     assert(point and type(point.key)=="string","No position saved")
     for _,k in ipairs({"x","y","z"}) do local n=point.pos[k];assert(type(n)=="number" and n==n and math.abs(n)<100000,"Invalid position") end
     local key,trans,current,go=context()
     assert(key==point.key,"Scene, hunter or quest changed; save a new position")
+    if point.region then assert(point.region==M.region(),"Favorite belongs to another region") end
     local p=point.pos
     assert(distance_squared(p,current)<10000^2,"Destination is outside this local area")
     return trans,current,key,go
@@ -88,7 +105,7 @@ function M.move(point)
     return action("queue move",function()
         assert(not pending and not verifying,"Wait for position verification before another move")
         checked(point)
-        pending={key=point.key,pos=xyz(point.pos),source=point.source}
+        pending={key=point.key,pos=xyz(point.pos),source=point.source,region=point.region}
         M.status.queued=true
         return "Position change queued for the next motion update"
     end,"queued")
@@ -184,7 +201,7 @@ function M.monster()
 end
 local function confirm(ui,menu,label,point)
     checked(point)
-    local target={key=point.key,pos=xyz(point.pos),source=label}
+    local target={key=point.key,pos=xyz(point.pos),source=label,region=point.region}
     M.status.last_request_destination=xyz(target.pos)
     ui.confirm({title=label.."?",lines={"Move within the current scene?",
         string.format("Destination: X %.1f, height %.1f, Z %.1f",target.pos.x,target.pos.y,target.pos.z),

@@ -6,7 +6,7 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 ROOT = Path(__file__).resolve().parents[1]
 AUTORUN = "reframework/autorun"
 MODULES = ("runtime", "options", "meals", "buffs", "extras", "positions",
-           "teleporter_map", "teleporter_map_model")
+           "teleporter_map", "teleporter_map_model", "records", "inventory", "journal")
 
 
 def build(output):

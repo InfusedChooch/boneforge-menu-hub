@@ -38,7 +38,7 @@ function M.new()
             LandInsectGlaive = false, LandInsectGlaiveTime = 0.3,
             SwitchAxe = false, SwitchAxeTime = 0.3,
         },
-        ["GHLQOL-gameplay.json"] = { meals = {}, buffs = {}, extras = {}, weapons = {}, smithy = {} },
+        ["GHLQOL-gameplay.json"] = { meals = {}, buffs = {}, extras = {}, weapons = {}, smithy = {}, favorites = {} },
         -- Buffer's module defaults are off. Suppress import of legacy enabled options.
         ["GHLQOL-buffer.json"] = { _ghl_migrated = true },
     }

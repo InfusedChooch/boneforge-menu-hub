@@ -3,7 +3,7 @@ local R=require("GHLQOL.runtime")
 local O=require("GHLQOL.options")
 local M={pages={},status={capabilities=R.capabilities,errors=R.errors,settings=O.status}}
 local modules={}
-for _,entry in ipairs({{"Smithy","smithy"},{"Support","support"},{"Meals","meals"},{"Buffs","buffs"},{"Extras","extras"},{"Weapons","weapons"},{"Positions","positions"},{"Map","teleporter_map"}}) do
+for _,entry in ipairs({{"Smithy","smithy"},{"Support","support"},{"Meals","meals"},{"Buffs","buffs"},{"Extras","extras"},{"Weapons","weapons"},{"Positions","positions"},{"Map","teleporter_map"},{"Inventory","inventory"},{"Hunter Journal","journal"}}) do
     local name,key=entry[1],entry[2]
     local ok,module=pcall(require,"GHLQOL."..key)
     if ok and module.init then

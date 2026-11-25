@@ -18,6 +18,8 @@ Download the [Windows plug-in preview](https://github.com/InfusedChooch/boneforg
 
 ## Build the native menu plug-in
 
+Local builds include region favorites on Map, live item timers on Buffs, a searchable Inventory with separate pouch and box counts, and a read-only Hunter Journal. In Map, name your current location or select a session pin to save a favorite. Inventory and Hunter Journal have a Refresh button for the loaded hunter.
+
 Use Windows x64, Visual Studio 2022 C++ tools, CMake 3.24 or newer, and Python. Run these commands from this directory.
 
 ```powershell

@@ -7,6 +7,58 @@ local view=Model.new()
 local next_sample,last_frame=0,os.clock()
 local snapshot,drag,selected_name
 local pin_name=""
+local browser={}
+local function favorite_id(region,name) return "favorite:"..region..":"..name end
+local function favorites(region)
+    local list=O.data.favorites[region]
+    return type(list)=="table" and list or {}
+end
+local function save_list(region,list)
+    local before=O.data.favorites[region]
+    O.data.favorites[region]=#list>0 and list or nil
+    O.save()
+    if O.status.save_error then
+        O.data.favorites[region]=before
+        error("Could not save favorites: "..O.status.save_error)
+    end
+end
+local function add_favorite(menu,target)
+    O.action(menu,function()
+        local fresh=Positions.snapshot()
+        local region=Positions.region()
+        assert(fresh.key==view.key and region and region==snapshot.region,"Region changed; refresh the map")
+        local name=(target and target.name or pin_name):match("^%s*(.-)%s*$")
+        assert(name~="" and utf8.len(name) and utf8.len(name)<=64 and not name:find("[%c#]"),"Enter a name of 1 to 64 characters without # or control characters")
+        local list={table.unpack(favorites(region))}
+        assert(#list<100,"This region already has 100 favorites")
+        for _,row in ipairs(list) do assert(row.name~=name,"That favorite name already exists in this region") end
+        list[#list+1]={name=name,pos=target and target.pos or fresh.position}
+        save_list(region,list)
+        pin_name="";browser.region=region;view.selected=favorite_id(region,name);next_sample=0
+        return "Favorite saved"
+    end)
+end
+local function draw_favorites(ui,menu)
+    local regions={}
+    for key in pairs(O.data.favorites) do regions[#regions+1]=key end
+    table.sort(regions)
+    if #regions==0 then ui.muted("No saved favorites.");return end
+    if not O.data.favorites[browser.region] then
+        browser.region=O.data.favorites[snapshot.region] and snapshot.region or regions[1]
+    end
+    local choices={}
+    for _,region in ipairs(regions) do choices[#choices+1]={region,Positions.region_name(region)} end
+    ui.bind_combo("Region##MapFavorites",browser,"region",choices)
+    local here=browser.region==snapshot.region
+    if not here then ui.muted("Visit this region to select its favorites on the map.") end
+    for index,row in ipairs(favorites(browser.region)) do
+        if type(row)=="table" and type(row.name)=="string" then
+            if O.button(ui,row.name.."##Favorite"..index,here) then
+                view.selected=favorite_id(browser.region,row.name);view.group=nil;menu._confirm=nil
+            end
+        end
+    end
+end
 local COLORS={background=0xff201a16,grid=0xff443b30,text=0xffded9cf,player=0xff62d6a9,
     pin=0xff75bce8,saved=0xff75bce8,previous=0xffbc8ec5,waypoint=0xffe1b987,monster=0xff7577e6,selected=0xffb8ecff}
 local measures={}
@@ -17,13 +69,26 @@ local function poll(menu,now)
     next_sample=now+0.1
     local ok,result=pcall(Positions.snapshot)
     local old_key=view.key
+    local old_region=snapshot and snapshot.region
     if ok then
+        local read,region=pcall(Positions.region)
+        result.region=read and region or nil
+        if result.region then
+            for _,row in ipairs(favorites(result.region)) do
+                if type(row)=="table" and type(row.name)=="string" then
+                    result.markers[#result.markers+1]={id=favorite_id(region,row.name),name=row.name,
+                        kind="favorite",pos=row.pos,region=region}
+                end
+            end
+        end
         local updated,err=pcall(view.update,view,result)
         if updated then snapshot=result;M.status.sample_error=nil
         else ok=false;result=err end
     end
     if not ok then snapshot=nil;view:invalidate();M.status.sample_error=tostring(result):sub(1,500)end
-    if old_key~=view.key then menu._confirm=nil;drag=nil;measures={};measure_count=0 end
+    if old_key~=view.key or old_region~=(snapshot and snapshot.region) then
+        menu._confirm=nil;drag=nil;measures={};measure_count=0
+    end
     M.status.samples=M.status.samples+1;M.status.context_key=view.key
     M.status.sampled_utc=os.date("!%Y-%m-%dT%H:%M:%SZ")
     M.status.target_errors=snapshot and snapshot.errors or nil
@@ -124,7 +189,7 @@ function M.draw(ui,menu)
     local now=os.clock();poll(menu,now)
     ui.muted("Coordinate map: +X right, +Z up. Drag to pan; use + / - to zoom. Click a marker to select it.")
     ui.muted("Green: you. Gold: saved/pinned. Purple: return. Blue: waypoint. Red: near monster.")
-    ui.muted("Pins keep their captured height and last only for this scene, hunter and quest. This view has no terrain/elevation map.")
+    ui.muted("Pins last for this scene. Favorites keep their captured height across visits to the same region.")
     if not snapshot then ui.muted(M.status.sample_error or "Enter the field first");return end
     local width,height=canvas_width(),360
     if ui.button("Fit locations##MapFit")then view:fit(width,height)end
@@ -162,6 +227,14 @@ function M.draw(ui,menu)
         if not found then view.group=nil end
     end
     local target=view:destination()
+    if snapshot.region then
+        ui.muted("Current region: "..Positions.region_name(snapshot.region))
+        local pin=target and target.kind=="pin" and target or nil
+        if O.button(ui,pin and "Save selected pin to favorites" or "Save current location to favorites",pin~=nil or pin_name:find("%S")~=nil) then
+            add_favorite(menu,pin)
+        end
+    else ui.muted("Region unavailable; favorites cannot be saved here.") end
+    ui.section("Favorites by region",function() draw_favorites(ui,menu) end,false)
     selected_name=target and target.name or nil
     if target then
         local p=target.pos
@@ -172,6 +245,16 @@ function M.draw(ui,menu)
     end
     if O.button(ui,"Remove selected pin##MapRemove",target~=nil and target.kind=="pin")then
         view:remove_selected_pin();menu._confirm=nil
+    end
+    if target and target.kind=="favorite" and ui.button("Remove selected favorite") then
+        O.action(menu,function()
+            local list={}
+            for _,row in ipairs(favorites(target.region)) do
+                if row.name~=target.name then list[#list+1]=row end
+            end
+            save_list(target.region,list);view.selected=nil;next_sample=0;menu._confirm=nil
+            return "Favorite removed"
+        end)
     end
     if Positions.status.verification then ui.muted("Last move: "..Positions.status.verification.outcome)end
     if Positions.status.last_outcome=="error" then ui.muted(Positions.status.last_error)end

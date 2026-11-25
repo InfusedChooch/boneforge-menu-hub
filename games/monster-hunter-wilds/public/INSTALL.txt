@@ -24,19 +24,19 @@ Install
    `-- reframework/                     (from the Boneforge ZIP)
        `-- autorun/
            |-- BoneforgeWilds.lua
-           `-- GHLQOL/                  (eight Lua modules)
+           `-- GHLQOL/                  (menu modules)
 
 4. Launch Wilds. Press Insert (the default REFramework overlay key), expand
    Script Generated UI, and open BoneforgeWilds. Choose a page. Load your
    hunter to use actions that require an active character.
 
 Pages
-Meals, Buffs, Extras, Positions and Map. Settings are saved by REFramework
-in reframework/data/GHLQOL-gameplay.json. Position bookmarks and map pins
-last for the current scene and session.
+Meals, Buffs, Extras, Positions, Map, Inventory and Hunter Journal. Settings
+and map favorites are saved in reframework/data/GHLQOL-gameplay.json. Map
+favorites are grouped by region. Other pins last for the current scene.
 
 Uninstall
 Close the game. Remove reframework/autorun/BoneforgeWilds.lua and the
-eight files listed under reframework/autorun/GHLQOL in this ZIP. Restore
+module files listed under reframework/autorun/GHLQOL in this ZIP. Restore
 your previous copies if you backed them up. You can keep the gameplay
 settings file for a later install.

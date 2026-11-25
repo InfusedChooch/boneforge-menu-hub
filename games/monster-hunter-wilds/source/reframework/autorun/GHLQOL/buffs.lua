@@ -80,9 +80,37 @@ function M.tick()
     local read,err=pcall(M.apply,false)
     M.status.error=not read and tostring(err):sub(1,1000) or nil
 end
+local timers, next_read, timer_owner = {}, 0, nil
+local function draw_timers(ui)
+    local ok,status=pcall(R.local_status)
+    if not ok or not status then
+        timers={};timer_owner=nil;ui.muted("Load your hunter to see buff timers.");return
+    end
+    local owner=status:get_address()
+    if owner~=timer_owner or os.clock()>=next_read then
+        timer_owner=owner;next_read=os.clock()+0.25;timers={}
+        local buff=status:get_field("_ItemBuff")
+        for _,item in ipairs(M.items) do
+            local read,t=pcall(function()
+                local value=buff:get_field(item[3])
+                if item[5] then return value:get_field("_Timer") end
+                return value
+            end)
+            if not read or type(t)~="number" or t~=t or math.abs(t)==math.huge then
+                timers[#timers+1]=item[2].." timer unavailable"
+            elseif t>0 then
+                local seconds=math.ceil(t)
+                timers[#timers+1]=string.format("%s  %d:%02d",item[2],seconds//60,seconds%60)
+            end
+        end
+    end
+    if #timers==0 then ui.muted("No active item buffs.") end
+    for _,line in ipairs(timers) do ui.muted(line) end
+end
 function M.draw(ui,menu)
     local in_field=O.in_field()
     if not in_field then ui.muted("Selections save now and apply when your hunter is loaded.")end
+    ui.section("Active buff timers",function() draw_timers(ui) end,true)
     ui.section("Item buffs",function()
         O.toggle(ui,"maintain","Keep selected buffs active",cfg)
         ui.muted("Select the seeds, pills, powders and drinks you want. Turning maintenance off lets their normal timers run down.")

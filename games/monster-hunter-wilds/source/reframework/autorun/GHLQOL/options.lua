@@ -1,6 +1,6 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 local R=require("GHLQOL.runtime")
-local M={path="GHLQOL-gameplay.json",data={meals={},buffs={},extras={},weapons={},smithy={}},status={}}
+local M={path="GHLQOL-gameplay.json",data={meals={},buffs={},extras={},weapons={},smithy={},favorites={}},status={}}
 local files=fs and fs.glob and fs.glob([[GHLQOL-gameplay\.json]])
 local ok,saved=false,nil
 if not files or #files>0 then ok,saved=pcall(json.load_file,M.path) end

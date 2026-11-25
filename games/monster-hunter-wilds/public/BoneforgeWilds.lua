@@ -6,8 +6,8 @@ if rawget(_G, "__ghl_qol_loaded") then
 end
 _G.__ghl_qol_loaded = true
 
-local names = {"Meals", "Buffs", "Extras", "Positions", "Map"}
-local modules = {"meals", "buffs", "extras", "positions", "teleporter_map"}
+local names = {"Meals", "Buffs", "Extras", "Positions", "Map", "Inventory", "Hunter Journal"}
+local modules = {"meals", "buffs", "extras", "positions", "teleporter_map", "inventory", "journal"}
 local pages = {}
 local active = 1
 local menu = {}

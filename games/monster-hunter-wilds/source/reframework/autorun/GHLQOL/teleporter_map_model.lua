@@ -28,7 +28,7 @@ function M.new()
             if i>128 then break end
             local ok,pos=pcall(copy,row.pos)
             if ok and type(row.id)=="string" then
-                self.live[#self.live+1]={id=row.id,name=tostring(row.name or row.id),kind=row.kind or "target",pos=pos,key=self.key}
+                self.live[#self.live+1]={id=row.id,name=tostring(row.name or row.id),kind=row.kind or "target",pos=pos,key=self.key,region=row.region}
             end
         end
         local last=self.trail[#self.trail]
@@ -61,7 +61,7 @@ function M.new()
     function V:destination()
         for _,point in ipairs(self:markers())do
             if point.id==self.selected and point.id~="player" and point.key==self.key then
-                return {key=point.key,pos=copy(point.pos),name=point.name,source="Map: "..point.name,kind=point.kind,id=point.id}
+                return {key=point.key,pos=copy(point.pos),name=point.name,source="Map: "..point.name,kind=point.kind,id=point.id,region=point.region}
             end
         end
     end
