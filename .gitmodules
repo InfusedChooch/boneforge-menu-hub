@@ -16,3 +16,9 @@
 [submodule "open-skies-stb"]
 	path = games/no-mans-sky/external/stb
 	url = https://github.com/nothings/stb.git
+[submodule "darktide-source-code"]
+	path = games/darktide/external/Darktide-Source-Code
+	url = https://github.com/InfusedChooch/Darktide-Source-Code.git
+[submodule "vermintide-2-source-code"]
+	path = games/vermintide-2/external/Vermintide-2-Source-Code
+	url = https://github.com/InfusedChooch/Vermintide-2-Source-Code.git
