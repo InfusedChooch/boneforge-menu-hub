@@ -94,6 +94,9 @@ Strings live in `locales/en.json`, which is built into the DLL. To add a languag
 
 ## Credits
 
+Sinnisterly developed the [original Open Skies mod menu](https://github.com/Sinnisterly/open-skies).
+[InfusedChooch](https://github.com/InfusedChooch) maintains the Boneforge version.
+
 Feature research builds on the No Man's Sky Cheat Engine table by BD, with scripts by BigJit901, gir489 and lucar. Expedition season data comes from the cwmonkey/nms-expeditions archive (original files by BorisDeLeodium). Expedition exclusives list from Nexus mod 2589.
 
 ## License

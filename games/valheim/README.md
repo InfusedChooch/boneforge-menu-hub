@@ -164,8 +164,9 @@ Validation/           offline checks
 
 ---
 
-## Maintainer
+## Credits and maintenance
 
+Sinnisterly developed the [original Valheaven mod menu](https://github.com/Sinnisterly/valheaven-mod-menu).
 [InfusedChooch](https://github.com/InfusedChooch) leads development and maintains Boneforge Edition.
 
 Valheim is © Iron Gate AB / Coffee Stain.
