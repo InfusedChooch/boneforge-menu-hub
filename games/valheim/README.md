@@ -3,7 +3,7 @@
 A Windows mod menu for Valheim with building, crafting, and world tools. It loads from `version.dll` alongside `valheim.exe` and runs without BepInEx.
 
 - **Current release** 4.0.1
-- **Verified on** Valheim 1.0.21 on Windows in a local world and on a vanilla dedicated server.
+- **Verified on** Valheim 1.0.30 for Windows (Steam build 26870846, network version 42), including a vanilla dedicated server.
 - **Open menu** Press **F8** by default. Change the key in Settings.
 
 ## License
@@ -14,6 +14,7 @@ This is an unofficial Valheim mod. Iron Gate Studio and Coffee Stain Publishing 
 
 ## Changelog
 
+- **November 25, 2026 compatibility check.** The released 4.0.1 DLL passed 400 offline checks and 85 in-game assertions on Valheim 1.0.30. All 168 Harmony hooks loaded. Tests covered World Edit, dedicated-server placement and reconnect, and both Forge of Potential options.
 - **4.0.1 (November 24, 2026)** Added the top-down World Edit workspace on **F6**, with a searchable parts picker, snapping and grid controls, terrain brushes, area copy, saved blueprints, group transforms, and shared undo/redo.
 - **4.0.0 (November 24, 2026)** Boneforge Edition version update.
 - **Boneforge Edition (November 24, 2026)** Updated the menu branding, credits, and documentation.
