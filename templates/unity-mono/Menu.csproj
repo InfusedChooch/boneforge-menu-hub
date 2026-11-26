@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>BoneforgeUnityMenu</AssemblyName>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+  <PropertyGroup Condition="Exists('$(UnityManagedDir)/assembly_valheim.dll') And Exists('$(UnityManagedDir)/assembly_utils.dll')">
+    <DefineConstants>$(DefineConstants);VALHEIM</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="Exists('$(UnityManagedDir)/assembly_valheim.dll') And Exists('$(UnityManagedDir)/assembly_utils.dll')">
+    <Reference Include="$(UnityManagedDir)/assembly_utils.dll" Private="false" />
+    <Reference Include="$(UnityManagedDir)/Unity.InputSystem.dll" Private="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="checks/**/*.cs" />
+    <Reference Include="$(UnityManagedDir)/UnityEngine*.dll" Private="false" />
+  </ItemGroup>
+  <Target Name="CheckUnityReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(UnityManagedDir)/UnityEngine.UI.dll') Or !Exists('$(UnityManagedDir)/UnityEngine.InputLegacyModule.dll')" Text="Set UnityManagedDir to the game's Managed folder containing uGUI and the legacy input module." />
+  </Target>
+</Project>

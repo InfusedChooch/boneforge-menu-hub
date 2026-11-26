@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.24)
+project(BoneforgePreview VERSION 0.1.0 LANGUAGES CXX)
+set(IMGUI_DIR "" CACHE PATH "Path to the Dear ImGui source checkout")
+if(NOT EXISTS "${IMGUI_DIR}/backends/imgui_impl_dx11.cpp")
+    message(FATAL_ERROR "Set IMGUI_DIR to the ImGui checkout listed in README.md")
+endif()
+configure_file(identity.h.in identity.h @ONLY)
+add_library(menu STATIC Menu.cpp "${IMGUI_DIR}/imgui.cpp" "${IMGUI_DIR}/imgui_widgets.cpp"
+    "${IMGUI_DIR}/imgui_tables.cpp" "${IMGUI_DIR}/imgui_draw.cpp")
+target_compile_features(menu PUBLIC cxx_std_17)
+target_include_directories(menu PUBLIC . "${IMGUI_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
+add_executable(${PROJECT_NAME} Preview.cpp "${IMGUI_DIR}/backends/imgui_impl_win32.cpp"
+    "${IMGUI_DIR}/backends/imgui_impl_dx11.cpp")
+target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/backends")
+target_link_libraries(${PROJECT_NAME} PRIVATE menu d3d11 dxgi d3dcompiler dwmapi advapi32)

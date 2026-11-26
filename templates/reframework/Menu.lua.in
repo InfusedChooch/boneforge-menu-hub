@@ -1,0 +1,56 @@
+local id = "@PROJECT_NAME@"
+local version = "@PROJECT_VERSION@"
+local settingsPath = id .. ".json"
+local hints = true
+local readable, contents = pcall(fs.read, settingsPath)
+if readable and type(contents) == "string" and contents:find("%S") then
+    local loaded, settings = pcall(json.load_string, contents)
+    if loaded and type(settings) == "table" then hints = settings.controlHints ~= false end
+end
+local saved = true
+local page = 1
+local lastArea
+
+local function overview()
+    local bridge = rawget(_G, id)
+    local connected = type(bridge) == "table" and bridge.ready == true and
+        bridge.version == version and type(bridge.current_area) == "function"
+    imgui.text(id .. "  " .. version)
+    if connected then
+        imgui.text("Native bridge ready (" .. bridge.version .. ")")
+    else
+        imgui.text("Native bridge unavailable. Load the matching plug-in DLL.")
+    end
+    local area = connected and bridge.current_area()
+    if type(area) == "string" and area ~= "" then
+        imgui.text("Game adapter ready")
+        if imgui.button("Read current area") then lastArea = area end
+        if lastArea then imgui.text(lastArea) end
+    else
+        lastArea = nil
+        imgui.text("Game adapter unavailable")
+        imgui.text("Read current area unavailable. Waiting for a game area.")
+    end
+    if hints then imgui.text("Use Settings to change control hints.") end
+end
+
+local function preferences()
+    local changed, value = imgui.checkbox("Show control hints", hints)
+    if changed then
+        local ok, result = pcall(json.dump_file, settingsPath, {controlHints = value})
+        saved = ok and result ~= false
+        if saved then hints = value end
+    end
+    if not saved then imgui.text("Could not save this preference.") end
+end
+
+local pages = {{"Overview", overview}, {"Settings", preferences}}
+re.on_draw_ui(function()
+    if not imgui.tree_node(id) then return end
+    for index, entry in ipairs(pages) do
+        if index > 1 then imgui.same_line() end
+        if imgui.button(entry[1]) then page = index end
+    end
+    pages[page][2]()
+    imgui.tree_pop()
+end)

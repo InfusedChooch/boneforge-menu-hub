@@ -10,6 +10,16 @@ Boneforge's workspace for PC game mods and modding tools. Game projects live und
 | Warhammer 40,000: Darktide | [Lua ESP and Gambits](games/darktide/) | [Install from source](games/darktide/#installation) |
 | Warhammer: Vermintide 2 | [Game script reference](games/vermintide-2/) | [Initialize the submodule](games/vermintide-2/#get-the-reference) |
 
+## Menu starters
+
+Copy one starter folder into a new project and follow its README to name, build, and test your menu.
+
+| Starter | Use it for |
+| --- | --- |
+| [Unity Mono](templates/unity-mono/) | A keyboard-operated Unity Canvas in a managed DLL, based on Valheaven's persistent menu host. |
+| [Native ImGui](templates/native-imgui/) | An Open Skies-style C++ menu with a standalone Windows/DX11 preview. |
+| [REFramework](templates/reframework/) | A native RE Engine plug-in feeding a Lua page under Script Generated UI, based on the Wilds menu. |
+
 ## Tools
 
 The top-level `tables/` folder holds the shared `.CT` collection for Cheat Engine, GHL CE/DMA, and Manifold Engine. Gitea tracks the tables in the hub. On GitHub, the collection has its own private repository, which can be cloned into `tables/`. The public hub ignores that folder.

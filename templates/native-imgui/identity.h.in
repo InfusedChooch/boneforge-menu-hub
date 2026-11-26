@@ -1,0 +1,4 @@
+#pragma once
+#define MENU_NAME "@PROJECT_NAME@"
+#define MENU_VERSION "@PROJECT_VERSION@"
+#define MENU_WINDOW L"@PROJECT_NAME@"

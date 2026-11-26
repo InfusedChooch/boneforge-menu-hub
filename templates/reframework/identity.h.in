@@ -1,0 +1,3 @@
+#pragma once
+#define MENU_ID "@PROJECT_NAME@"
+#define MENU_VERSION "@PROJECT_VERSION@"
