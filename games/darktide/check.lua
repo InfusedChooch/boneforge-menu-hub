@@ -31,3 +31,5 @@ end
 
 check("darktide-lua-esp", "espenis")
 check("darktide-lua-gambits", "darktide-lua-gambits")
+check("boneforge-observer", "boneforge-observer")
+dofile("tests/observer_wallet.lua")
